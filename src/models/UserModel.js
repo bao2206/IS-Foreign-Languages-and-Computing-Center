@@ -1,0 +1,57 @@
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
+
+
+const emailRegex = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
+const phoneRegex = /^(?:\+84|0)(?:3|5|7|8|9)\d{8}$/;
+
+require('dotenv').config();
+
+
+const UserSchema = new Schema({
+    name: {
+        type: String,
+        required: [true, "Please provide a username"],
+        unique: [true,"Please provide a unique username"],
+        trim: [true, "Name must not contain leading or trailing spaces"],
+        min: 0, 
+        max: 50 
+    },
+    email:{
+        type: String,  
+        required: [true, "Please provide a email"],
+        unique: [true,"Please provide a unique email"],
+        trim: [true, "Email must not contain leading or trailing spaces"],
+        validate:{
+            validator:(v) => emailRegex.test(v),
+            message:"Email is invalid"
+        }
+    },
+    phone:{
+        type: String,
+        unique:[true, "Phone is already exist"],
+        validate:{
+            validator:(v) => phoneRegex.test(v),
+            message:"Phone is invalid. Please enter a valid phone number"
+        }
+    },
+    address: {
+        street: {type: String, 
+          // required: true
+          },
+        city: {type: String, 
+          // required: true
+        },
+        country: {type: String, 
+          // required: true
+        },
+      },
+    avatar: {type: String}, 
+    status:{
+        type: String,
+        enum: ["active", "inactive"],
+        default: "active"
+    },
+    createdAt: {type: Date, default: Date.now},
+})
+module.exports = mongoose.model("User", UserSchema);

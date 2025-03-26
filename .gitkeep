@@ -1,5 +1,0 @@
-touch src/controllers/.gitkeep
-touch src/models/.gitkeep
-touch src/routes/.gitkeep
-touch src/middlewares/.gitkeep
-touch src/config/.gitkeep
