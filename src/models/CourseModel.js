@@ -17,10 +17,20 @@ const CourseSchema = new Schema({
        
    },
    slug: String,
-   numallocatedperiod:{
+   numAllocatedPeriod:{
     type: Number,
-    required: [true, "Please provide a numallocatedperiod"]
-   }
+    required: [true, "Please provide a num allocated period"]
+   },
+   is_special: {
+       type: Boolean,
+       default: false
+   },
+   ordering: {
+       type: Number,
+       required: [true, "Please provide a ordering"],
+       min: [0, "Ordering must be greater than 0"],
+       max: [100, "Ordering must be less than 100"]
+   },
 });
 
 module.exports = mongoose.model("Course", CourseSchema);

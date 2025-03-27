@@ -16,7 +16,7 @@ const ClassSchema = new Schema({
         min: [1, "Quantity must be greater than 1"],
      },
     materials: [String],
-    daybegin: { type: Date, required: [true, "Please provide a daybegin"],
+    daybegin: { type: Date, required: [true, "Please provide a day begin"],
         validate: {
             validator: function (v) {
                 return v >= new Date();
@@ -24,7 +24,7 @@ const ClassSchema = new Schema({
             message: "Start date must be today or in the future"
         },
      },
-    dayend: { type: Date, required: [true, "Please provide a dayend"],
+    dayend: { type: Date, required: [true, "Please provide a day end"],
         validate:{function (v) {
             return v >= this.daybegin;
         }},
