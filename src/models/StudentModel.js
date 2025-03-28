@@ -12,11 +12,11 @@ const StudentSchema = new Schema({
     classId:{
         type: Schema.Types.ObjectId, ref: 'Class', required: true
     },
-    grades: [{
-        type: Schema.Types.ObjectId, ref: 'Grade'
+    points: [{
+        type: Schema.Types.ObjectId, ref: 'Point', requuired: true
     }],
     attendance:[{
-        type: Schema.Types.ObjectId, ref: 'Attendance'
+        type: Schema.Types.ObjectId, ref: 'Attendance', required: true
     }]
 });
 

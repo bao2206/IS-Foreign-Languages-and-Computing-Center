@@ -17,6 +17,9 @@ const EnrollmentSchema = new Schema({
         type: Date,
         default: Date.now
     },
-    status: { type: String, enum: ["enrolled", "completed", "dropped"], default: "enrolled" }
+    status: { type: String, enum: ["enrolled", "completed", "dropped"], default: "enrolled" },
+    consultant: {
+        type: String,
+    }
 });
 module.exports = mongoose.model("Enrollment", EnrollmentSchema);
