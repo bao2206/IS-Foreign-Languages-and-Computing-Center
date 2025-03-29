@@ -30,6 +30,9 @@ const ClassSchema = new Schema({
         }},
         message: "End date must be greater than start date"
      },
+    scheduled:{
+        type: Schema.Types.ObjectId, ref: "Schedule"
+     }
   });
   
 module.exports = mongoose.model("Class", ClassSchema);

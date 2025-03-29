@@ -17,10 +17,26 @@ const ScheduleSchema = new Schema({
         ref: 'User',
         required: true
     },
-    students: [{
-        type: Schema.Types.ObjectId,
-        ref: 'User'
-    }],
+    room: {
+        type: String, required: true
+    },
+    date:{
+        type: Date,
+        required: true,
+    },
+    startTime:{
+        type: String, 
+        required: true,
+    },
+    endTime: {
+        type: String, 
+        required: true,
+    },
+    status:{
+        type: String,
+        enum: ["Scheduled", "Cancel"],
+        default: "Scheduled"
+    },
 });
 
 module.exports = mongoose.model('Schedule', ScheduleSchema);
