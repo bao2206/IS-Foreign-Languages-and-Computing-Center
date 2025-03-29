@@ -5,4 +5,6 @@ const InvoiceSchema = new Schema({
     paymentId: { type: mongoose.Schema.Types.ObjectId, ref: "Payment" },
     details: String,
     issuedAt: { type: Date, default: Date.now }
-})
+});
+
+module.exports = mongoose.model("Invoice", InvoiceSchema);
