@@ -2,17 +2,28 @@ require("dotenv").config();
 const express = require('express');
 const cors = require('cors');
 
+
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 app.get("/", (req, res) => {
     res.send(" Server is running with Express!");
   });
-  
+
+  // Import database connection
+  const {connectDB} = require("./src/config/database");
+  (async () => {
+    await connectDB();
+  })()
+    
   // Import routes
-  const userRoutes = require("./src/routes/user.routes");
+  // const userRoutes = require("./src/routes/user.routes");
+  // app.use("/api/users", userRoutes);
+
+  const userRoutes = require("./src/routes/userRoute");
   app.use("/api/users", userRoutes);
   
   // Khởi động server
