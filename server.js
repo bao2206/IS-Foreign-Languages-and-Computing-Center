@@ -6,6 +6,7 @@ const cors = require('cors');
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 app.get("/", (req, res) => {
@@ -18,9 +19,12 @@ app.get("/", (req, res) => {
     await connectDB();
   })()
     
-  // // Import routes
+  // Import routes
   // const userRoutes = require("./src/routes/user.routes");
   // app.use("/api/users", userRoutes);
+
+  const userRoutes = require("./src/routes/userRoute");
+  app.use("/api/users", userRoutes);
   
   // Khởi động server
   const PORT = process.env.PORT || 5000;
