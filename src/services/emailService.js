@@ -5,13 +5,13 @@ const sendEmailService = async (emailAdd) => {
     var transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: process.env.EMAIL_USER, // your email address
-          pass: process.env.EMAIL_PASS // your email password
+          user: 'maithegiabao22062002@gmail.com', // your email address
+          pass: 'fqzq wgaq tlrm bdgc' // your email password
         }
       });
       
       var mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: 'maithegiabao22062002@gmail.com',
         to: emailAdd,
         subject: 'Sending Email using Node.js',
         text: 'That was easy!'
