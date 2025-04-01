@@ -39,14 +39,19 @@ app.get("/", (req, res) => {
     await connectDB();
     // await createAdmin();
   })()
-    
+  
+
+  // Config view
+  const configView = require("./src/config/configView");
+  configView(app);
+
   // Create a new admin
 
 
   app.use("/", require("./src/routes/homepageRoute"));
   const indexRouter = require("./src/routes/index");
   app.use("/api", indexRouter);
-  
+
 
   // Khởi động server
   const PORT = process.env.PORT || 5000;
