@@ -4,11 +4,11 @@ const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const {ErrorCustom} = require('../core/errorCustom');
 
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 const AuthSchema = new Schema({
-    userId: {
-        type: Schema.Types.ObjectId, ref: 'User', required: true
-    },
+    // userId: {
+    //     type: Schema.Types.ObjectId, ref: 'User', required: true
+    // },
     username:{
         type: String,
         required: [true, "Please provide a username"],
