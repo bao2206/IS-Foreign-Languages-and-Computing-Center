@@ -12,7 +12,7 @@ const UserSchema = new Schema({
     authId:{
         type: Schema.Types.ObjectId,
         ref: "Auth",
-        required: [true, "Please provide a authId"],
+        required: [false, "Please provide a authId"],
     },
     name: {
         type: String,
