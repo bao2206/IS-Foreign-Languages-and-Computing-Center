@@ -3,12 +3,12 @@ const { eventNames } = require('../models/userModel');
 const jwt = require("jsonwebtoken");
 
 const generateToken = (userID) => {
-  return jwt.sign({ userID }, process.env.JWT_SECRET, { expiresIn: "24h" }); // Token hết hạn sau 24h
+  return jwt.sign({ userID }, process.env.JWT_SECRET, { expiresIn: "2h" }); // Token hết hạn sau 2h
 };
 
 const sendEmailService = async (emailAdd, userID, userName) => {
   const token = generateToken(userID);
-  const url = `http://localhost:8080/api/users/register/${token}`;
+  const url = `http://localhost:8080/api/users/register?token=${token}`;
 
   var transporter = nodemailer.createTransport({
       service: 'gmail',

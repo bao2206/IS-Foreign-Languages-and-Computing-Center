@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require("bcrypt");
 const userModel = require('../models/userModel');
 
+
 const createUser = async (req, res) => {
     const data = req.body;
     const user = await createUserService(data);
@@ -24,18 +25,25 @@ const createUser = async (req, res) => {
 
 const getUsertoCreateAccount = async (req, res) => {
     try {
-        const token = req.params.token;
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const userID = decoded.userID;
+        console.log("getus: ", req.user.userID);
+        
+        const userID = req.user.userID;
+
+        
         const user = await findUserByID(userID);
         if (!user) {
             return res.status(404).json({
                 message: "User not found",
             });
         }
+        const checkUser= await Auth.findById(user.authId);
+        if (checkUser && checkUser.username) {
+            return res.status(200).json({
+                message: "User already has a username, no need to register again.",
+            });
+        }
         res.render('registerAccount.ejs', {
             user: user,
-            token: token,
         });
 
     } catch (error) {
@@ -45,27 +53,22 @@ const getUsertoCreateAccount = async (req, res) => {
 
 const registerAccount = async (req, res) => {
     try {
-        const { username, password } = req.body;
-        const token = req.params.token;
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const userID = decoded.userID;
-        console.log("Register account data:", req.body);
-        console.log("Decoded token:", decoded);
-        console.log("User ID:", userID);
+        const { username, password} = req.body;
+
+        const userID = req.params.id;
+        console.log("userID: ", userID);
         // Kiểm tra đủ dữ liệu đầu vào
-        if (!userID || !username || !password || !token) {
+        if (!userID || !username || !password) {
             throw new Error("Missing required fields", 400);
         }
 
         // Tìm user theo userID
         const user = await userModel.findById(userID);
         const auth = await Auth.findById(user.authId);
-        console.log("User found:", user);
+
         if (!user) {
             throw  new Error("User not found", 404);
         }
-
-        console.log("User found:", user);
 
         // Kiểm tra username đã tồn tại chưa (tránh trùng username với user khác)
         const existingUser = await Auth.findOne({ username });
@@ -73,17 +76,11 @@ const registerAccount = async (req, res) => {
             throw  new Error("Username already exists", 400);
         }
 
-        console.log("Username is not available");
-
         // Cập nhật username và password (hash password trước khi lưu)
         auth.username = username;
-        auth.password = await bcrypt.hash(password, parseInt(process.env.SALT_WORK_FACTOR, 10));
+        auth.password = password;
 
         await auth.save();
-
-        console.log("User updated:", auth);
-        // ✅ Vô hiệu hóa token bằng cách lưu vào danh sách token bị thu hồi (cần thiết nếu dùng JWT)
-        revokeToken(token);
 
         res.status(200).json({
             message: "Account updated successfully",

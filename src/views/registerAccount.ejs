@@ -10,7 +10,7 @@
 <body>
   <div class="wrapper">
     <h2>Registration</h2>
-    <form id="registerForm" action="/api/users/register/<%= token %>" method="POST">
+    <form id="registerForm" action="/api/users/register/<%= user.id %>" data-user-id="<%= user.id %>" method="POST">
       <div class="input-box">
         <input type="text" name="name" value="<%= user.name %>" readonly>
       </div>
@@ -32,38 +32,39 @@
 
 <script>
   document.querySelector("#registerForm").addEventListener("submit", async function (e) {
-      e.preventDefault(); // Ngừng gửi form để xử lý lỗi
+    e.preventDefault(); // Ngừng gửi form để xử lý lỗi
 
-      const username = document.querySelector("[name='username']").value;
-      const password = document.querySelector("[name='password']").value;
-      const confirmPassword = document.querySelector("[name='confirmPassword']").value;
+    const form = e.target;
+    const userId = form.dataset.userId; // ✅ Lấy userId từ data-user-id
 
-      // Kiểm tra mật khẩu có khớp không
-      if (password !== confirmPassword) {
-          alert("Passwords do not match!");
-          return;
-      }
+    const username = document.querySelector("[name='username']").value;
+    const password = document.querySelector("[name='password']").value;
+    const confirmPassword = document.querySelector("[name='confirmPassword']").value;
 
-      // Lấy token từ URL (Ví dụ lấy từ đường dẫn hiện tại)
-      const token = window.location.pathname.split('/').pop(); // Lấy token từ URL
+    if (password !== confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
 
-      // Gửi yêu cầu POST đến API
-      const response = await fetch(`/api/users/register/${token}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
-      });
+    const params = new URLSearchParams(window.location.search);
 
-      const data = await response.json();
+    const response = await fetch(`/api/users/register/${userId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
 
-      if (response.ok) {
-          alert("Registration successful!");
-          window.location.href = "/login";  // Điều hướng đến trang đăng nhập
-      } else {
-          alert(data.message || "Error during registration.");
-      }
+    const data = await response.json();
+
+    if (response.ok) {
+      alert("Registration successful!");
+      window.location.href = "/login";
+    } else {
+      alert(data.message || "Error during registration.");
+    }
   });
 </script>
+
 
 
 </html>
