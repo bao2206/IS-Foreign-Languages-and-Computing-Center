@@ -8,7 +8,7 @@ router.post('/create', userController.createUser);
 router.get('/register', authMiddleware,userController.getUsertoCreateAccount);
 router.post('/register/:id', userController.registerAccount);
 router.post('/login', asyncHandle(userController.loginAccount));
-router.post("/logout", asyncHandle(userController.logoutAccount));
+router.post("/logout", authMiddleware,asyncHandle(userController.logoutAccount));
 // cập nhật thông tin người dùng cá nhân
 router.post("/update/:id", authMiddleware ,asyncHandle(userController.getUserUpdate));
 module.exports = router;
