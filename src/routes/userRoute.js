@@ -1,19 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { createUser, getUsertoCreateAccount, registerAccount} = require('../controllers/UserController');
+const userController = require('../controllers/UserController');
 const authMiddleware = require('../middlewares/authMiddleware');
-
-router.get('/', 
-    (req, res) => {
-        res.send('User route is working!');
-    }
-);
-
-router.post('/createUser', createUser);
-
-router.get('/register', authMiddleware, (req, res) => {
-    getUsertoCreateAccount(req, res);
-});
-router.post('/register/:id', registerAccount);
-
+const {asyncHandle} = require('../utils/asyncHandle');
+router.get('/',  userController.getAllUsers);
+router.post('/create', userController.createUser);
+router.get('/register', authMiddleware,userController.getUsertoCreateAccount);
+router.post('/register/:id', userController.registerAccount);
+router.post('/login', asyncHandle(userController.loginAccount));
+router.post("/logout", asyncHandle(userController.logoutAccount));
+// cập nhật thông tin người dùng cá nhân
+router.post("/update/:id", authMiddleware ,asyncHandle(userController.getUserUpdate));
 module.exports = router;

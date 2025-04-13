@@ -12,6 +12,7 @@ class ErrorCustom extends Error {
 class BadRequestError extends ErrorCustom {
     constructor(message = reasonStatus.BAD_REQUEST, status = statusCode.BAD_REQUEST) {
         super(message, status)
+       
     }
 }
 
@@ -20,11 +21,16 @@ class UnAuthorizedError extends ErrorCustom {
         super(message, status)
     }
 }
-
+class NotFoundError extends ErrorCustom {
+    constructor(message = reasonStatus.NOT_FOUND, status = statusCode.NOT_FOUND) {
+        super(message, status)
+    }
+}
 
 
 module.exports = {
     ErrorCustom,
     BadRequestError,
-    UnAuthorizedError
+    UnAuthorizedError,
+    NotFoundError
 }

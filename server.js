@@ -10,6 +10,7 @@ app.use(cors());
 const mongoose = require("mongoose");
 const AccountService = require("./src/services/accountService");
 const AuthModel = require("./src/models/AuthModel");
+
 app.get("/", (req, res) => {
     res.send(" Server is running with Express!");
   });
@@ -51,7 +52,8 @@ app.get("/", (req, res) => {
   app.use("/", require("./src/routes/homepageRoute"));
   const indexRouter = require("./src/routes/index");
   app.use("/api", indexRouter);
-
+  const errorHandler = require('./src/middlewares/errorHandle');
+  app.use(errorHandler);
 
   // Khởi động server
   const PORT = process.env.PORT || 5000;
