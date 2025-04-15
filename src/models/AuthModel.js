@@ -27,6 +27,9 @@ const AuthSchema = new Schema({
         min: 6,
         max: 20
     },
+    customePermission: [{
+        type: mongoose.Schema.Types.ObjectId, ref: "Permission"
+    }],
     role: { type: String, enum: ["student", "parent", "teacher", "admin", "consultant", "academic"], required: true },
     createdAt: {type: Date, default: Date.now},
     updatedAt: {type: Date, default: Date.now},

@@ -27,10 +27,21 @@ class NotFoundError extends ErrorCustom {
     }
 }
 
-
+class ForbiddenError extends ErrorCustom {
+    constructor(message = reasonStatus.FORBIDDEN, status = statusCode.FORBIDDEN) {
+        super(message, status)
+    }
+}
+class NotAcceptableError extends ErrorCustom {
+    constructor(message = reasonStatus.NOT_ACCEPTABLE, status = statusCode.NOT_ACCEPTABLE) {
+        super(message, status)
+    }
+}
 module.exports = {
     ErrorCustom,
     BadRequestError,
     UnAuthorizedError,
-    NotFoundError
+    NotFoundError,
+    ForbiddenError,
+    NotAcceptableError
 }

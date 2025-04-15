@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
+const slugify = require('slugify');
 const CourseSchema = new Schema({
     coursename: {
         type: String, 
@@ -31,6 +32,11 @@ const CourseSchema = new Schema({
        min: [0, "Ordering must be greater than 0"],
        max: [100, "Ordering must be less than 100"]
    },
+});
+
+CourseSchema.pre("save", function(next) {
+    this.slug = slugify(this.coursename, { lower: true, strict: true });
+    next();
 });
 
 module.exports = mongoose.model("Course", CourseSchema);
