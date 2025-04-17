@@ -7,7 +7,7 @@ const PermissionSchema = new Schema({
         required: [true, 'Key is required'],
         unique: true,
         minlength: [3, 'Key must be at least 3 characters long'],
-        maxlength: [20, 'Key cannot exceed 20 characters'],
+        maxlength: [50, 'Key cannot exceed 50 characters'],
         match: [/^[a-zA-Z_]+$/, 'Key can only contain letters and underscores'],
       },
       name: {

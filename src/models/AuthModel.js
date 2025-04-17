@@ -30,7 +30,7 @@ const AuthSchema = new Schema({
     customePermission: [{
         type: mongoose.Schema.Types.ObjectId, ref: "Permission"
     }],
-    role: { type: String, enum: ["student", "parent", "teacher", "admin", "consultant", "academic"], required: true },
+    role: { type: mongoose.Schema.Types.ObjectId, ref: "Role" },
     createdAt: {type: Date, default: Date.now},
     updatedAt: {type: Date, default: Date.now},
 });

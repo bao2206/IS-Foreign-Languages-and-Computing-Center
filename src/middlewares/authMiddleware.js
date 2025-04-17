@@ -2,11 +2,11 @@ const jwt = require("jsonwebtoken");
 const redis = require("../utils/redis");
 require("dotenv").config(); 
 const {UnAuthorizedError} = require("../core/errorCustom")
-const authMiddleWare = async(req,res,next) =>{
+const authMiddleware = async(req,res,next) =>{
     let token = req.header("Authorization")?.replace("Bearer ","");
 
     if (!token) token = req.query.token || req.params.token;
-    if(!token) return next(new UnAuthorizedError("Token is required."));
+    if(!token) return next(new UnAuthorizedError("Please login to access this resource."));
     const isBlackListed = await redis.get(`blacklist:${token}`);
     if(isBlackListed) return next(new UnAuthorizedError("Token is blacklisted."));
     jwt.verify(token, process.env.JWT_SECRET, (error, decoded) => {
@@ -15,4 +15,4 @@ const authMiddleWare = async(req,res,next) =>{
         next();
     });
 }
-module.exports = authMiddleWare;
+module.exports = authMiddleware;

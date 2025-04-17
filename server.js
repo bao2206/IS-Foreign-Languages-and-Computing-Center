@@ -10,7 +10,7 @@ app.use(cors());
 const mongoose = require("mongoose");
 const AccountService = require("./src/services/accountService");
 const AuthModel = require("./src/models/AuthModel");
-
+const {initAdminRole} = require("./src/init/initAdminRole");
 app.get("/", (req, res) => {
     res.send(" Server is running with Express!");
   });
@@ -39,6 +39,7 @@ app.get("/", (req, res) => {
   (async () => {
     await connectDB();
     // await createAdmin();
+    await initAdminRole();
   })()
   
 
