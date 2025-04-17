@@ -5,7 +5,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const {asyncHandle} = require('../utils/asyncHandle');
 // const checkPermission = require('../middlewares/checkPermission');
 router.get('/', authMiddleware ,asyncHandle(PermissionController.getAllPermission));
-router.post('/create', authMiddleware ,asyncHandle(PermissionController.createPermission));
+router.post('/create', authMiddleware ,PermissionController.createPermission);
 // router.get('/register', authMiddleware,PermissionController.getUsertoCreateAccount);
 // router.post('/register/:id', PermissionController.registerAccount);
 // router.post('/login', asyncHandle(PermissionController.loginAccount));

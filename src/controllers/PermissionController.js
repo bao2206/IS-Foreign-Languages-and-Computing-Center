@@ -19,7 +19,8 @@ class PermissionController {
         const exits = await PermissionService.findPermisionByKey(key);
         if(exits) throw new ErrorCustom("Permission already exists", 431);
         const permission = await PermissionService.createPermission(key, description);
-        const adminRole = await Role.findRole("admin");
+        const adminRole = await RoleService.findRole("admin");
+        console.log("Admin role:", adminRole);
         if (adminRole && !adminRole.permissions.includes(permission._id)) {
           adminRole.permissions.push(permission._id);
           await adminRole.save();
