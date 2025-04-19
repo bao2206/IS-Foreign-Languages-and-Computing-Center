@@ -1,10 +1,12 @@
-const userModel = require('../models/userModel');
+const userModel = require('../models/UserModel');
 const authModel = require('../models/AuthModel');
 
 class UserService {
    async create(data) {
     try {
-      const auth = await authModel.create({ role: data.role });
+
+      // Tạm thời chưa tạo role cho user, chỉ tạo auth
+      const auth = await authModel.create({role: "6800d06932b289b2fe5b0409"});
 
       const user = await userModel.create({
         name: data.name,

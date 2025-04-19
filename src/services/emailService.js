@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const { eventNames } = require('../models/userModel');
+const { eventNames } = require('../models/UserModel');
 const jwt = require("jsonwebtoken");
 
 const generateToken = (userID) => {
