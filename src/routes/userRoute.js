@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/UserController');
+const teacherController = require('../controllers/TeacherController');
+const certificateController = require('../controllers/CertificateController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const {asyncHandle} = require('../utils/asyncHandle');
 
@@ -14,11 +16,11 @@ router.post("/logout", authMiddleware,asyncHandle(userController.logoutAccount))
 router.post("/update/:id", authMiddleware ,asyncHandle(userController.getUserUpdate));
 
 // manage teacher
-router.get('/teachers', asyncHandle(userController.getTechers));
-router.get('/teachers/:id', asyncHandle(userController.getTeacherById));
-router.put('/teachers/:id', asyncHandle(userController.updateTeacherById));
+router.get('/teachers', asyncHandle(teacherController.getAllTeachers));
+router.get('/teachers/:id', asyncHandle(teacherController.getTeacherById));
+router.put('/teachers/:id', asyncHandle(teacherController.updateTeacherById));
 
-router.get('/teachers/certificate/:id', asyncHandle(userController.getTeacherCertificate));
-router.post('/teachers/certificate/:id', asyncHandle(userController.createCertificate));
-router.put('/teachers/certificate/:id', asyncHandle(userController.updateCertificate));
+router.get('/teachers/certificate/:id', asyncHandle(certificateController.getTeacherCertificate));
+router.post('/teachers/certificate/:id', asyncHandle(certificateController.createCertificate));
+router.put('/teachers/certificate/:id', asyncHandle(certificateController.updateCertificate));
 module.exports = router;
