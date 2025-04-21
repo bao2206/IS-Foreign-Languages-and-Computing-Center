@@ -11,7 +11,9 @@ const authMiddleware = async(req,res,next) =>{
     if(isBlackListed) return next(new UnAuthorizedError("Token is blacklisted."));
     jwt.verify(token, process.env.JWT_SECRET, (error, decoded) => {
         if(error) return next(new UnAuthorizedError("Invalid token."));
-        req.user = decoded;
+        req.user = {
+            id: decoded.id,
+        };
         next();
     });
 }

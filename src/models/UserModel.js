@@ -17,10 +17,15 @@ const UserSchema = new Schema({
     name: {
         type: String,
         required: [true, "Please provide a username"],
-        unique: [true,"Please provide a unique username"],
+        // unique: [true,"Please provide a unique username"],
         trim: [true, "Name must not contain leading or trailing spaces"],
         min: 0, 
         max: 50 
+    },
+    sex:{
+        type: String,
+        enum: ["male", "female"],
+        default: "male"
     },
     email:{
         type: String,  

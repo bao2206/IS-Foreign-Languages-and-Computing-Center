@@ -1,5 +1,4 @@
 const nodemailer = require('nodemailer');
-const { eventNames } = require('../models/UserModel');
 const jwt = require("jsonwebtoken");
 
 const generateToken = (userID) => {
@@ -34,6 +33,37 @@ const sendEmailService = async (emailAdd, userID, userName) => {
     }
   });
 }
+const sendAccount = async (name, email, username ,password) =>{
+  
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USERNAME,
+      pass: process.env.EMAIL_PASSWORD
+    }
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USERNAME,
+    to: email,
+    subject: 'Tài khoản nhân viên đã được tạo',
+    html: `
+      <p>Xin chào <strong>${name}</strong>,</p>
+      <p>Bạn đã được tạo tài khoản nhân viên trong hệ thống.</p>
+      <p><strong>🔑 Tài khoản đăng nhập:</strong></p>
+      <ul>
+        <li><strong>Username:</strong> ${username}</li>
+        <li><strong>Password:</strong> ${password}</li>
+      </ul>
+      <p>💡 Gợi ý: Sau khi đăng nhập lần đầu, hãy thay đổi mật khẩu để bảo mật hơn.</p>
+      <p>Trân trọng,</p>
+      <p>Hệ thống quản lý khóa học</p>
+    `
+  };
+
+  await transporter.sendMail(mailOptions);
+}
 module.exports = {
     sendEmailService,
+    sendAccount
 }

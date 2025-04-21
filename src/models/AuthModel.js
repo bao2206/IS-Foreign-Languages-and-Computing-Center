@@ -11,7 +11,7 @@ const AuthSchema = new Schema({
     // },
     username:{
         type: String,
-        required: [false, "Please provide a username"],
+        required: [true, "Please provide a username"],
         unique: [true,"Please provide a unique username"],
         trim: [true, "Name must not contain leading or trailing spaces"],
         min: 3,
@@ -19,12 +19,12 @@ const AuthSchema = new Schema({
     },
     password:{
         type: String,
-        required: [false, "Please provide a password"],
+        required: [true, "Please provide a password"],
         validate:{
             validator:(v) => passwordRegex.test(v),
-            message:"Password must contain at least one number and one special character"
+            message:"Password must contain at least one lowercase letter, one uppercase letter, one number and be at least 8 characters long"
         },
-        min: 6,
+        min: 8,
         max: 20
     },
     customePermission: [{

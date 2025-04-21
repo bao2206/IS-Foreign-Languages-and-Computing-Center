@@ -1,32 +1,33 @@
 const UserService = require("../services/userService");
-const { sendEmailService } = require("../services/emailService");
+const { sendAccount } = require("../services/emailService");
+const {generateUsername, generatePassword} = require("../utils/userUtils");
 const Auth = require("../models/AuthModel");
 const jwt = require("jsonwebtoken");
 const redis = require("../utils/redis");
-
+const RoleService = require("../services/RoleService");
 const userModel = require("../models/UserModel");
-const TeacherService = require("../services/teacherService");
-
-const { BadRequestError, NotFoundError } = require("../core/errorCustom");
+const AuthService = require("../services/AuthService");
+const { BadRequestError, NotFoundError, ForbiddenError } = require("../core/errorCustom");
 class UserController {
   async getAllUsers(req, res) {
     res.send("User route is working!");
   }
-  async createUser(req, res) {
-    const data = req.body;
-    const user = await UserService.create(data);
-    if (!user) {
-      return res.status(400).json({
-        message: "User creation failed",
-      });
-    }
+  async createStaff(req, res) {
+    const { name, sex, email, citizenID, phone, address, avatar} = req.body;
 
-    sendEmailService(user.email, user._id, user.name);
-
-    return res.status(201).json({
-      message: "User created successfully",
-      data: user,
-    });
+ 
+    const newStaff = await UserService.createNewStaff(name, sex, email, citizenID, phone, address, avatar)
+    const username = generateUsername(email);
+    const password = generatePassword(8);
+    const role_id = "6800d06932b289b2fe5b0409";
+    // console.log(username, password, role_id);
+    
+    const newAuth = await AuthService.createAccount(username, password, role_id);
+    newStaff.authId = newAuth._id;
+    await newStaff.save();
+    sendAccount(name, email, username, password);
+    return res.status(200).json({message: "Create new staff successfully", user: newStaff, auth: newAuth });
+   
   }
 
   async getUsertoCreateAccount(req, res) {
@@ -142,10 +143,29 @@ class UserController {
     }
     return res.status(200).json({ message: "Logout successful" });
   }
+  async getUserInfo(req, res) {
+    const requestedId = req.params.id;
+    const user = await UserService.findById(requestedId);
+    if (!user) throw new NotFoundError("User not found");
+    const findNick = await UserService.findAuthById(requestedId);
+    const currentUserId = req.user.id;
+    console.log("requestedId: ", requestedId);
+    // console.log("currentUserId: ", currentUserId);
+    console.log("findNick: ", findNick);
+    // const currentUserRole = req.user.role;
+
+  if (currentUserId !== findNick ) {
+    throw new ForbiddenError("You do not have permission to access this id");
+  }
+    
+    return res.status(200).json({
+      message: "User information retrieved successfully",
+      data: user,
+    });
+  }
   async getUserUpdate(req, res) {
     const userID = req.params.id;
     const data = req.body;
-
     const user = await UserService.findById(userID);
     if(!user) throw new NotFoundError("User not found");
     const updatedUser = await UserService.updateUserById(userID, data);

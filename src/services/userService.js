@@ -2,31 +2,16 @@ const userModel = require('../models/UserModel');
 const authModel = require('../models/AuthModel');
 
 class UserService {
-   async create(data) {
-    try {
-
-      // Tạm thời chưa tạo role cho user, chỉ tạo auth
-      const auth = await authModel.create({role: "6800d06932b289b2fe5b0409"});
-
-      const user = await userModel.create({
-        name: data.name,
-        authId: auth._id,
-        email: data.email,
-        citizenID: data.citizenID,
-        phone: data.phone,
-        address: {
-          street: data.street || '',
-          city: data.city || '',
-          country: data.country || '',
-        },
-        avatar: data.avatar,
-        status: data.status,
-      });
-
-      return user;
-    } catch (error) {
-      throw error;
-    }
+  async checkEmail(email) {
+    return await userModel.findOne({ email });
+  }
+   async createNewStaff(name, sex, email, citizenID, phone, address, avatar) {
+    return await userModel.create({
+      name, sex, email, citizenID, phone, address, avatar
+    }) 
+  }
+  async findAuthById(userID){
+    return await userModel.findById(userID).select('authId');
   }
 
    async findById(userID) {
