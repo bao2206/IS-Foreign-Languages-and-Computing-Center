@@ -10,9 +10,9 @@ class UserService {
       name, sex, email, citizenID, phone, address, avatar
     }) 
   }
-  async findAuthById(userID){
-    return await userModel.findById(userID).select('authId');
-  }
+  // async findAuthById(userID){
+  //   return await userModel.findById(userID).select('authId');
+  // }
 
    async findById(userID) {
     try {
