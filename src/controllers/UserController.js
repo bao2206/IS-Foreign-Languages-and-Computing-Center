@@ -147,14 +147,14 @@ class UserController {
     const requestedId = req.params.id;
     const user = await UserService.findById(requestedId);
     if (!user) throw new NotFoundError("User not found");
-    const findNick = await UserService.findAuthById(requestedId);
+   
     const currentUserId = req.user.id;
-    console.log("requestedId: ", requestedId);
+    // console.log("requestedId: ", requestedId);
     // console.log("currentUserId: ", currentUserId);
-    console.log("findNick: ", findNick);
+   
     // const currentUserRole = req.user.role;
 
-  if (currentUserId !== findNick ) {
+  if (currentUserId !== user.authId.toString() ) {
     throw new ForbiddenError("You do not have permission to access this id");
   }
     

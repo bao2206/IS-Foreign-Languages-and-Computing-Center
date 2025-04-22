@@ -15,7 +15,7 @@ router.post("/logout", authMiddleware,asyncHandle(userController.logoutAccount))
 //update user
 router.get("/info/:id", authMiddleware ,asyncHandle(userController.getUserInfo));
 // cập nhật thông tin người dùng cá nhân
-router.post("/update/:id", authMiddleware ,asyncHandle(userController.getUserUpdate));
+router.put("/info/:id", authMiddleware ,asyncHandle(userController.getUserUpdate));
 
 // manage teacher
 router.get('/teachers', asyncHandle(teacherController.getAllTeachers));
