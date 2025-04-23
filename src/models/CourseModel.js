@@ -17,10 +17,29 @@ const CourseSchema = new Schema({
        min: [0, "Price must be greater than 0"],
        
    },
-   slug: String,
+   slug: {
+         type: String,
+         unique: true,
+         required: true
+   },
+   Image: {
+         type: [String],
+         required: [false, "Please provide a image"],
+         validate: {
+              validator: function (v) {
+                return v.startsWith("http") || v.startsWith("https");
+              },
+              message: "Image must be a valid URL"
+         }
+   },
    numAllocatedPeriod:{
     type: Number,
     required: [true, "Please provide a num allocated period"]
+   },
+   slug: {
+       type: String,
+       unique: true,
+       required: true
    },
    is_special: {
        type: Boolean,
@@ -31,6 +50,11 @@ const CourseSchema = new Schema({
        required: [true, "Please provide a ordering"],
        min: [0, "Ordering must be greater than 0"],
        max: [100, "Ordering must be less than 100"]
+   },
+   status: {
+       type: String,
+       enum: ['active', 'inactive'],
+       default: 'active'
    },
 });
 
