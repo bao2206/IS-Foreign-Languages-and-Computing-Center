@@ -7,7 +7,7 @@ const {ErrorCustom} = require('../core/errorCustom');
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 const AuthSchema = new Schema({
     // userId: {
-    //     type: Schema.Types.ObjectId, ref: 'User', required: true
+    //     type: Schema.Types.ObjectId, ref: 'User', required: false
     // },
     username:{
         type: String,
@@ -31,9 +31,11 @@ const AuthSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId, ref: "Permission"
     }],
     role: { type: mongoose.Schema.Types.ObjectId, ref: "Role" },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
     createdAt: {type: Date, default: Date.now},
     updatedAt: {type: Date, default: Date.now},
-});
+}, { timestamps: true }); ;
 AuthSchema.pre('save', async function(next){
     const user = this;
 

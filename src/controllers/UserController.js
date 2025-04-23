@@ -1,33 +1,54 @@
 const UserService = require("../services/userService");
-const { sendAccount } = require("../services/emailService");
-const {generateUsername, generatePassword} = require("../utils/userUtils");
+const { sendAccount, sendResetPasswordEmail } = require("../services/emailService");
+const { generateUsername, generatePassword } = require("../utils/userUtils");
 const Auth = require("../models/AuthModel");
 const jwt = require("jsonwebtoken");
 const redis = require("../utils/redis");
 const RoleService = require("../services/RoleService");
 const userModel = require("../models/UserModel");
 const AuthService = require("../services/AuthService");
-const { BadRequestError, NotFoundError, ForbiddenError } = require("../core/errorCustom");
+const crypto = require("crypto");
+const {
+  BadRequestError,
+  NotFoundError,
+  ForbiddenError,
+} = require("../core/errorCustom");
 class UserController {
   async getAllUsers(req, res) {
     res.send("User route is working!");
   }
   async createStaff(req, res) {
-    const { name, sex, email, citizenID, phone, address, avatar} = req.body;
+    const { name, sex, email, citizenID, phone, address, avatar } = req.body;
 
- 
-    const newStaff = await UserService.createNewStaff(name, sex, email, citizenID, phone, address, avatar)
+    const newStaff = await UserService.createNewStaff(
+      name,
+      sex,
+      email,
+      citizenID,
+      phone,
+      address,
+      avatar
+    );
     const username = generateUsername(email);
     const password = generatePassword(8);
     const role_id = "6800d06932b289b2fe5b0409";
     // console.log(username, password, role_id);
-    
-    const newAuth = await AuthService.createAccount(username, password, role_id);
+
+    const newAuth = await AuthService.createAccount(
+      username,
+      password,
+      role_id
+    );
     newStaff.authId = newAuth._id;
     await newStaff.save();
     sendAccount(name, email, username, password);
-    return res.status(200).json({message: "Create new staff successfully", user: newStaff, auth: newAuth });
-   
+    return res
+      .status(200)
+      .json({
+        message: "Create new staff successfully",
+        user: newStaff,
+        auth: newAuth,
+      });
   }
 
   async getUsertoCreateAccount(req, res) {
@@ -147,17 +168,13 @@ class UserController {
     const requestedId = req.params.id;
     const user = await UserService.findById(requestedId);
     if (!user) throw new NotFoundError("User not found");
-   
-    const currentUserId = req.user.id;
-    // console.log("requestedId: ", requestedId);
-    // console.log("currentUserId: ", currentUserId);
-   
-    // const currentUserRole = req.user.role;
 
-  if (currentUserId !== user.authId.toString() ) {
-    throw new ForbiddenError("You do not have permission to access this id");
-  }
-    
+    const currentUserId = req.user.id;
+
+    if (currentUserId !== user.authId.toString()) {
+      throw new ForbiddenError("You do not have permission to access this id");
+    }
+
     return res.status(200).json({
       message: "User information retrieved successfully",
       data: user,
@@ -165,9 +182,14 @@ class UserController {
   }
   async getUserUpdate(req, res) {
     const userID = req.params.id;
-    const data = req.body;
     const user = await UserService.findById(userID);
-    if(!user) throw new NotFoundError("User not found");
+    if (!user) throw new NotFoundError("User not found");
+    const currentUserId = req.user.id;
+    if(currentUserId !== user.authId.toString()){
+      throw new ForbiddenError("You do not have permission to access this id");
+    }
+    const data = req.body;
+    
     const updatedUser = await UserService.updateUserById(userID, data);
     return res.status(200).json({
       message: "User updated successfully",
@@ -175,6 +197,73 @@ class UserController {
     });
   }
 
+  async changePassword(req, res) {
+    const authId = req.user.id;
+    const user = await AuthService.findAccount(authId);
+    if (!user) throw new NotFoundError("User not found");
+    const {currentPassword, newPassword, confirmPassword} = req.body;
+    
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) throw new BadRequestError("Wrong password");
+    if(newPassword !== confirmPassword) throw new BadRequestError("New password and confirm password do not match"); 
+
+    user.password = newPassword;
+    await user.save();
+    return res.status(200).json({
+      message: "Password changed successfully",
+    });
+    
+  }
+  async forgotPassword(req, res) {
+    const { username } = req.body;
+    //AuthModel
+    const userAuth = await AuthService.findByUsername(username);
+
+    if (!userAuth) throw new NotFoundError("User not found");
+
+    //Usermodel kiếm email 
+    const user = await UserService.findByAuthId(userAuth._id);
+    if (!user || !user.email) throw new NotFoundError("Email not found");
+
+    const token = crypto.randomBytes(20).toString("hex");
+    const expires = Date.now() + 1000 * 60 * 10;
+    userAuth.resetPasswordToken = token;
+    userAuth.resetPasswordExpires = expires;
+    console.log("Token", token);
+    console.log("Token of user", userAuth.resetPasswordToken);
+    await userAuth.save();
+   
+
+
+    await sendResetPasswordEmail(user.email, token);
+
+
+    return res.status(200).json({
+      message: "Reset password email sent successfully",
+    });
+  }
+  async resetPassword(req, res) {
+    const { token } = req.params;
+    const { newPassword, confirmPassword } = req.body;
+
+    if (!token) {
+      throw new BadRequestError("Missing required fields");
+    }
+    if(newPassword !== confirmPassword) throw new BadRequestError("New password and confirm password do not match"); 
+
+    const user = await AuthService.findByResetToken(token);
+    if(!user) throw new BadRequestError("Invalid or expired token");
+
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    return res.status(200).json({
+      message: "Password reset successfully",
+    });
+  }
 }
+
 
 module.exports = new UserController();

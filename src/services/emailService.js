@@ -1,69 +1,80 @@
 const nodemailer = require('nodemailer');
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
 
 const generateToken = (userID) => {
-  return jwt.sign({ userID }, process.env.JWT_SECRET, { expiresIn: "2h" }); // Token hết hạn sau 2h
+  return jwt.sign({ userID }, process.env.JWT_SECRET, { expiresIn: '2h' });
 };
 
-const sendEmailService = async (emailAdd, userID, userName) => {
-  const token = generateToken(userID);
-  const url = `http://localhost:8080/api/users/register?token=${token}`;
-
-  var transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USERNAME, // your email address
-        pass: process.env.EMAIL_PASSWORD // your email password
-      }
-    });
-    
-  var mailOptions = {
-    from: 'maithegiabao22062002@gmail.com',
-    to: emailAdd,
-    subject: 'Sending Email using Node.js',
-    text: 'Link to create Account: ' + url,
-    html: `<p>Dear ${userName},</p><p>Click <a href="${url}">here</a> to create your account.</p><p>Thank you!</p>`,
-  };
-  
-  transporter.sendMail(mailOptions, function(error, info){
-    if (error) {
-      console.log(error);
-    } else {
-      console.log('Email sent: ' + info.response);
-    }
-  });
-}
-const sendAccount = async (name, email, username ,password) =>{
-  
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USERNAME,
-      pass: process.env.EMAIL_PASSWORD
-    }
-  });
-
+// 📦 Tạo transporter dùng chung
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USERNAME,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
+const sendMail = async (to, subject, html) => {
   const mailOptions = {
     from: process.env.EMAIL_USERNAME,
-    to: email,
-    subject: 'Tài khoản nhân viên đã được tạo',
-    html: `
-      <p>Xin chào <strong>${name}</strong>,</p>
-      <p>Bạn đã được tạo tài khoản nhân viên trong hệ thống.</p>
-      <p><strong>🔑 Tài khoản đăng nhập:</strong></p>
-      <ul>
-        <li><strong>Username:</strong> ${username}</li>
-        <li><strong>Password:</strong> ${password}</li>
-      </ul>
-      <p>💡 Gợi ý: Sau khi đăng nhập lần đầu, hãy thay đổi mật khẩu để bảo mật hơn.</p>
-      <p>Trân trọng,</p>
-      <p>Hệ thống quản lý khóa học</p>
-    `
+    to,
+    subject,
+    html,
   };
 
+  // const t0 = performance.now();
   await transporter.sendMail(mailOptions);
-}
+  // console.log(`📨 Email "${subject}" sent to ${to} in ${(performance.now() - t0).toFixed(2)}ms`);
+};
+
+/**
+ * 📧 Gửi link xác minh tạo tài khoản (có token đăng ký)
+ */
+const sendEmailService = async (email, userID, userName) => {
+  const token = generateToken(userID);
+  const url = `http://localhost:8080/api/users/register?token=${token}`;
+  const html = `
+    <p>Xin chào <strong>${userName}</strong>,</p>
+    <p>Vui lòng nhấn <a href="${url}">vào đây</a> để hoàn tất việc tạo tài khoản.</p>
+    <p>Liên kết này sẽ hết hạn sau 2 giờ.</p>
+  `;
+  await sendMail(email, 'Tạo tài khoản hệ thống', html);
+};
+
+/**
+ * 🧑‍💼 Gửi tài khoản nhân viên đã tạo
+ */
+
+const sendAccount = async (name, email, username, password) => {
+  const html = `
+    <p>Xin chào <strong>${name}</strong>,</p>
+    <p>Bạn đã được tạo tài khoản nhân viên trong hệ thống.</p>
+    <ul>
+      <li><strong>Username:</strong> ${username}</li>
+      <li><strong>Password:</strong> ${password}</li>
+    </ul>
+    <p>💡 Hãy đổi mật khẩu sau khi đăng nhập để bảo mật hơn.</p>
+  `;
+  await sendMail(email, 'Tài khoản nhân viên đã được tạo', html);
+};
+
+/**
+ * 🔑 Gửi email đặt lại mật khẩu
+ */
+const sendResetPasswordEmail = async (email, token) => {
+  const resetUrl = `http://localhost:3000/api/users/reset-password?token=${token}`;
+  const html = `
+    <p>Bạn vừa yêu cầu đặt lại mật khẩu.</p>
+    <p>Nhấn vào liên kết sau để đặt lại mật khẩu của bạn:</p>
+    <p><a href="${resetUrl}">${resetUrl}</a></p>
+    <p>Liên kết có hiệu lực trong 10 phút.</p>
+    <p>Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>
+  `;
+  await sendMail(email, '🔑 Đặt lại mật khẩu', html);
+};
+
 module.exports = {
-    sendEmailService,
-    sendAccount
-}
+  sendEmailService,
+  sendAccount,
+  sendResetPasswordEmail,
+  generateToken,
+};

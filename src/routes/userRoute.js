@@ -16,7 +16,9 @@ router.post("/logout", authMiddleware,asyncHandle(userController.logoutAccount))
 router.get("/info/:id", authMiddleware ,asyncHandle(userController.getUserInfo));
 // cập nhật thông tin người dùng cá nhân
 router.put("/info/:id", authMiddleware ,asyncHandle(userController.getUserUpdate));
-
+router.put("/change-password", authMiddleware, asyncHandle(userController.changePassword));
+router.post("/forgot-password", asyncHandle(userController.forgotPassword));
+router.put("/reset-password/:token", asyncHandle(userController.resetPassword));
 // manage teacher
 router.get('/teachers', asyncHandle(teacherController.getAllTeachers));
 router.get('/teachers/:id', asyncHandle(teacherController.getTeacherById));

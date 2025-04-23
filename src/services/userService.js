@@ -10,9 +10,9 @@ class UserService {
       name, sex, email, citizenID, phone, address, avatar
     }) 
   }
-  // async findAuthById(userID){
-  //   return await userModel.findById(userID).select('authId');
-  // }
+  async findByAuthId(authId) {
+    return await userModel.findOne({ authId });
+  }
 
    async findById(userID) {
     try {
@@ -40,7 +40,7 @@ class UserService {
       citizenID,
       phone,
       avatar,
-      status,
+      // status,
       address
     } = data;
 
@@ -50,7 +50,7 @@ class UserService {
       ...(citizenID !== undefined && { citizenID }),
       ...(phone !== undefined && { phone }),
       ...(avatar !== undefined && { avatar }),
-      ...(status !== undefined && { status }),
+      // ...(status !== undefined && { status }),
     });
 
     if (address !== undefined) {

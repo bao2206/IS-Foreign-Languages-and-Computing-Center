@@ -37,14 +37,16 @@ const UserSchema = new Schema({
             message:"Email is invalid"
         }
     },
-    citizenID:{
+    citizenID: {
         type: String,
         required: [true, "Please provide a citizen ID"],
-        unique: [true,"Please provide a unique citizen ID"],
+        unique: [true, "Please provide a unique citizen ID"],
         trim: [true, "Citizen ID must not contain leading or trailing spaces"],
-        min: 0, 
-        max: 12 
-    },
+        validate: {
+          validator: (v) => /^\d{12}$/.test(v),
+          message: "Citizen ID must be exactly 12 digits"
+        }
+      },
     phone:{
         type: String,
         unique:[true, "Phone is already exist"],
