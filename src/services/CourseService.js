@@ -7,11 +7,19 @@ class CourseService {
     }
     
     async getAllCourses() {
-        return await courseModel.find({}).populate('enrollments');
+        return await courseModel.find({});
     }
     
     async getCourseById(id) {
-        return await courseModel.findById(id).populate('enrollments');
+        return await courseModel.findById(id);
+    }
+
+    async getSpecialCourse() {
+        return await courseModel.find({ is_special: true });
+    }
+
+    async getCourseBySlug(slug) {
+        return await courseModel.findOne({ slug: slug });
     }
     
     async updateCourse(id, data) {
@@ -23,6 +31,21 @@ class CourseService {
     }
 
     // Registration methods
+
+    async getAllRegistrations() {
+        return await CourseRegistrationModel.find({}).populate('courseId').populate('studentId');
+    }
+
+    async getRegistrationById(id) {
+        return await CourseRegistrationModel.findById(id).populate('courseId').populate('studentId');
+
+    }
+
+    async getRegistrationByUserId(id) {
+        return await CourseRegistrationModel.find({
+            studentId: id,
+        }).populate('courseId');
+    }
     
     async registerForCourse(courseId, studentId) {
         return await CourseRegistrationModel.create({
@@ -36,6 +59,10 @@ class CourseService {
     }
 
     async respondToRegistration(id, employeeId, status) {
+        console.log("ID", id);
+        
         return await CourseRegistrationModel.findByIdAndUpdate(id, {employeeId: employeeId, status: status }, { new: true });
     }
 }
+
+module.exports = new CourseService();

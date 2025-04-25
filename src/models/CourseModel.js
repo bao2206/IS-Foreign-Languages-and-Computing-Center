@@ -20,26 +20,15 @@ const CourseSchema = new Schema({
    slug: {
          type: String,
          unique: true,
-         required: true
+         required: false
    },
    Image: {
          type: [String],
          required: [false, "Please provide a image"],
-         validate: {
-              validator: function (v) {
-                return v.startsWith("http") || v.startsWith("https");
-              },
-              message: "Image must be a valid URL"
-         }
    },
    numAllocatedPeriod:{
     type: Number,
     required: [true, "Please provide a num allocated period"]
-   },
-   slug: {
-       type: String,
-       unique: true,
-       required: true
    },
    is_special: {
        type: Boolean,
