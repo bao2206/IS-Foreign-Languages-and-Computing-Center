@@ -30,7 +30,7 @@ const UserSchema = new Schema({
     email:{
         type: String,  
         required: [true, "Please provide a email"],
-        unique: [true,"Please provide a unique email"],
+        unique: true,
         trim: [true, "Email must not contain leading or trailing spaces"],
         validate:{
             validator:(v) => emailRegex.test(v),

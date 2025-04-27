@@ -1,6 +1,9 @@
 const AuthModel = require('../models/AuthModel');
 
 class AuthService {
+    async findRole(role){
+        return await AuthModel.find(role).select("_id");
+    }
     async createAccount(username, password, role) {
         return await AuthModel.create({username, password, role});
     }

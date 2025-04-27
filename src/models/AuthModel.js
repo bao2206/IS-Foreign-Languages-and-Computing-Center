@@ -27,7 +27,7 @@ const AuthSchema = new Schema({
         min: 8,
         max: 20
     },
-    customePermission: [{
+    customPermission: [{
         type: mongoose.Schema.Types.ObjectId, ref: "Permission"
     }],
     role: { type: mongoose.Schema.Types.ObjectId, ref: "Role" },

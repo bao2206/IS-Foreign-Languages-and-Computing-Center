@@ -1,20 +1,41 @@
-const userModel = require('../models/UserModel');
-const authModel = require('../models/AuthModel');
+const userModel = require("../models/UserModel");
+const authModel = require("../models/AuthModel");
 
 class UserService {
+  async getAllUsers(query, skip, parsedLimit) {
+    return await userModel.find(query)
+    .populate({
+      path: "authId",
+      select: "username role",
+      populate: {
+        path: "role",
+        select: "name",
+      },
+    })
+    .skip(skip)
+    .limit(parsedLimit)
+  }
   async checkEmail(email) {
     return await userModel.findOne({ email });
   }
-   async createNewStaff(name, sex, email, citizenID, phone, address, avatar) {
+  async createNewStaff(name, sex, email, citizenID, phone, address, avatar) {
     return await userModel.create({
-      name, sex, email, citizenID, phone, address, avatar
-    }) 
+      name,
+      sex,
+      email,
+      citizenID,
+      phone,
+      address,
+      avatar,
+    });
   }
   async findByAuthId(authId) {
     return await userModel.findOne({ authId });
   }
-
-   async findById(userID) {
+  async countUsers(query) {
+    return await userModel.countDocuments(query);
+  }
+  async findById(userID) {
     try {
       return await userModel.findById(userID);
     } catch (error) {
@@ -22,7 +43,7 @@ class UserService {
     }
   }
 
-   async findByUsername(username) {
+  async findByUsername(username) {
     try {
       return await authModel.findOne({ username });
     } catch (error) {
@@ -41,7 +62,7 @@ class UserService {
       phone,
       avatar,
       // status,
-      address
+      address,
     } = data;
 
     Object.assign(user, {
@@ -63,6 +84,5 @@ class UserService {
     return await user.save();
   }
 }
-
 
 module.exports = new UserService();

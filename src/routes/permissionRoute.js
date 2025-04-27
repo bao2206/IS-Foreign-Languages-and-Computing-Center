@@ -3,13 +3,9 @@ const router = express.Router();
 const PermissionController = require('../controllers/PermissionController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const {asyncHandle} = require('../utils/asyncHandle');
-// const checkPermission = require('../middlewares/checkPermission');
+const checkPermission = require('../middlewares/checkPermission');
 router.get('/', authMiddleware ,asyncHandle(PermissionController.getAllPermission));
-router.post('/create', authMiddleware ,PermissionController.createPermission);
-// router.get('/register', authMiddleware,PermissionController.getUsertoCreateAccount);
-// router.post('/register/:id', PermissionController.registerAccount);
-// router.post('/login', asyncHandle(PermissionController.loginAccount));
-// router.post("/logout", authMiddleware,asyncHandle(PermissionController.logoutAccount));
-// cập nhật thông tin người dùng cá nhân
-// router.post("/update/:id", authMiddleware ,asyncHandle(PermissionController.getUserUpdate));
+router.post('/create', authMiddleware, checkPermission("create_permission") , asyncHandle(PermissionController.createPermission));
+router.put('/update/:id', authMiddleware, checkPermission("update_permission") , asyncHandle(PermissionController.updatePermission));
+router.delete('/:id', authMiddleware, checkPermission("delete_permission") , asyncHandle(PermissionController.deletePermission));
 module.exports = router;

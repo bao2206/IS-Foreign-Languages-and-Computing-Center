@@ -8,10 +8,10 @@ const errorHandler = (err, req, res, next) => {
     message = errors.join(", ");
   }
 
-  if (err.code === 11000) {
+  else if (err.code && err.code === 11000) {
     status = 409;
     let field = Object.keys(err.keyPattern)[0];
-    message = `${field} đã tồn tại`;
+    message = `${field} already exists`;
   }
 
   res.status(status).json({ message });

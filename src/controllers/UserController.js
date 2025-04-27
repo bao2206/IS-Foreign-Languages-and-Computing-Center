@@ -1,5 +1,8 @@
 const UserService = require("../services/userService");
-const { sendAccount, sendResetPasswordEmail } = require("../services/emailService");
+const {
+  sendAccount,
+  sendResetPasswordEmail,
+} = require("../services/emailService");
 const { generateUsername, generatePassword } = require("../utils/userUtils");
 const Auth = require("../models/AuthModel");
 const jwt = require("jsonwebtoken");
@@ -15,7 +18,28 @@ const {
 } = require("../core/errorCustom");
 class UserController {
   async getAllUsers(req, res) {
-    res.send("User route is working!");
+    const { role, page = 1, limit = 10, total } = req.query;
+    const parsedPage = parseInt(page);
+    const parsedLimit = total ? parseInt(total) : parseInt(limit);
+    const skip = (parsedPage - 1) * parsedLimit;
+    let authQuery = {};
+
+    if (role) authQuery.role = role;
+
+    const auths = await AuthService.findRole(authQuery);
+    const authIds = auths.map((auth) => auth._id);
+
+    const query = {};
+    if (authIds.length > 0) query.authId = { $in: authIds };
+    const totalUsers = await UserService.countUsers(query);
+    const users = await UserService.getAllUsers(query, skip, parsedLimit);
+
+    res.status(200).json({
+      data: users,
+      total: totalUsers,
+      currentPage: parsedPage,
+      totalPages: Math.ceil(totalUsers / parsedLimit),
+    });
   }
   async createStaff(req, res) {
     const { name, sex, email, citizenID, phone, address, avatar } = req.body;
@@ -42,13 +66,11 @@ class UserController {
     newStaff.authId = newAuth._id;
     await newStaff.save();
     sendAccount(name, email, username, password);
-    return res
-      .status(200)
-      .json({
-        message: "Create new staff successfully",
-        user: newStaff,
-        auth: newAuth,
-      });
+    return res.status(200).json({
+      message: "Create new staff successfully",
+      user: newStaff,
+      auth: newAuth,
+    });
   }
 
   async getUsertoCreateAccount(req, res) {
@@ -185,11 +207,11 @@ class UserController {
     const user = await UserService.findById(userID);
     if (!user) throw new NotFoundError("User not found");
     const currentUserId = req.user.id;
-    if(currentUserId !== user.authId.toString()){
+    if (currentUserId !== user.authId.toString()) {
       throw new ForbiddenError("You do not have permission to access this id");
     }
     const data = req.body;
-    
+
     const updatedUser = await UserService.updateUserById(userID, data);
     return res.status(200).json({
       message: "User updated successfully",
@@ -201,18 +223,20 @@ class UserController {
     const authId = req.user.id;
     const user = await AuthService.findAccount(authId);
     if (!user) throw new NotFoundError("User not found");
-    const {currentPassword, newPassword, confirmPassword} = req.body;
-    
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
     const isMatch = await user.comparePassword(currentPassword);
     if (!isMatch) throw new BadRequestError("Wrong password");
-    if(newPassword !== confirmPassword) throw new BadRequestError("New password and confirm password do not match"); 
+    if (newPassword !== confirmPassword)
+      throw new BadRequestError(
+        "New password and confirm password do not match"
+      );
 
     user.password = newPassword;
     await user.save();
     return res.status(200).json({
       message: "Password changed successfully",
     });
-    
   }
   async forgotPassword(req, res) {
     const { username } = req.body;
@@ -221,7 +245,7 @@ class UserController {
 
     if (!userAuth) throw new NotFoundError("User not found");
 
-    //Usermodel kiếm email 
+    //Usermodel kiếm email
     const user = await UserService.findByAuthId(userAuth._id);
     if (!user || !user.email) throw new NotFoundError("Email not found");
 
@@ -232,11 +256,8 @@ class UserController {
     console.log("Token", token);
     console.log("Token of user", userAuth.resetPasswordToken);
     await userAuth.save();
-   
-
 
     await sendResetPasswordEmail(user.email, token);
-
 
     return res.status(200).json({
       message: "Reset password email sent successfully",
@@ -249,10 +270,13 @@ class UserController {
     if (!token) {
       throw new BadRequestError("Missing required fields");
     }
-    if(newPassword !== confirmPassword) throw new BadRequestError("New password and confirm password do not match"); 
+    if (newPassword !== confirmPassword)
+      throw new BadRequestError(
+        "New password and confirm password do not match"
+      );
 
     const user = await AuthService.findByResetToken(token);
-    if(!user) throw new BadRequestError("Invalid or expired token");
+    if (!user) throw new BadRequestError("Invalid or expired token");
 
     user.password = newPassword;
     user.resetPasswordToken = undefined;
@@ -264,6 +288,5 @@ class UserController {
     });
   }
 }
-
 
 module.exports = new UserController();

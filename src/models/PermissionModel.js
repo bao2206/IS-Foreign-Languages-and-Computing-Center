@@ -18,8 +18,7 @@ const PermissionSchema = new Schema({
         type: String,
         maxlength: [255, 'Description must be less than 255 characters'],
       },
-    
-});
+} ,{timestamps: true},);
 
 PermissionSchema.pre("save", function(next) {
     this.name = slugify(this.key, { lower: true, strict: true });

@@ -1,6 +1,7 @@
 const PermissionService =  require("../services/PermissionService")
 const RoleService = require("../services/RoleService")
-const {ErrorCustom} = require("../core/errorCustom");
+const slugify = require('slugify');
+const {ErrorCustom, NotFoundError} = require("../core/errorCustom");
 class PermissionController {
     async getAllPermission(req, res) {
         const permissions = await PermissionService.getAllPermission();
@@ -28,6 +29,41 @@ class PermissionController {
             message: "success",
             data: {
                 permission
+            }
+        });
+    }
+    async deletePermission(req, res) {
+        const {id} = req.params;
+        const idPermission = await PermissionService.findId(id);
+        if(!idPermission) throw new NotFoundError("Id is required");
+        const permission = await PermissionService.deletePermission(id);
+        if(!permission) throw new ErrorCustom("Permission not found", 431);
+        await RoleService.updatePerrmissionDelete(id);
+        return res.status(200).json({
+            message: "success",
+            data: {
+                permission
+            }
+        });
+    }
+    async updatePermission(req, res) {
+        const {id} = req.params;
+        const {key, description} = req.body;
+        const idPermission = await PermissionService.findId(id);
+        if(!idPermission) throw new NotFoundError("Id is required");
+
+        let updatedData = {description};
+
+        if(key){
+            updatedData.key = key;
+            updatedData.name = slugify(key, { lower: true, strict: true });
+        }
+
+        const updated = await PermissionService.updatePermission(idPermission, updatedData);
+        res.status(200).json({
+            message: "Updated success",
+            data: {
+                permission: updated
             }
         });
     }

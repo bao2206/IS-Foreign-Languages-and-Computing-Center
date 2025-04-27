@@ -10,7 +10,9 @@ app.use(cors());
 const mongoose = require("mongoose");
 const AccountService = require("./src/services/accountService");
 const AuthModel = require("./src/models/AuthModel");
-const {initAdminRole} = require("./src/init/initAdminRole");
+const RoleModel = require("./src/models/RoleModel");
+// const {initAdminRole} = require("./src/init/initAdminRole");
+const { updatePermissionByCode } = require("./src/data/updatePermissionByCode"); 
 app.get("/", (req, res) => {
     res.send(" Server is running with Express!");
   });
@@ -36,10 +38,21 @@ app.get("/", (req, res) => {
     await newAdmin.save();
     console.log("Admin created successfully");
   }
+ 
   (async () => {
     await connectDB();
     // await createAdmin();
-    await initAdminRole();
+    // await initAdminRole();
+    // await AuthModel.updateOne(
+    // 
+    // );  { username: "superadmin" },
+    //   { $set: { role: new mongoose.Types.ObjectId("6800d06a32b289b2fe5b040c") } }
+  
+    // console.log("Cập nhật role thành công!");
+    
+    // await updatePermissionByCode("baopro2206", ["6800b2d25b1c6802f149dc88"]);
+  
+
   })()
   
 
