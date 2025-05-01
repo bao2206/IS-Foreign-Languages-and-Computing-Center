@@ -126,6 +126,9 @@ class CourseController {
         try {
             const employeeId = req.params.employeeId;
             const idRes = req.body.id;
+
+            // TO-DO: Check if the employeeId is valid and exists in the database
+            
             const registration = await CourseService.respondToRegistration(idRes, employeeId, req.body.status);
             if (!registration) {
                 throw new ErrorCustom('Registration not found', 404);

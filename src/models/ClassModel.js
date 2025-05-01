@@ -24,15 +24,18 @@ const ClassSchema = new Schema({
             message: "Start date must be today or in the future"
         },
      },
-    dayend: { type: Date, required: [true, "Please provide a day end"],
-        validate:{function (v) {
-            return v >= this.daybegin;
-        }},
-        message: "End date must be greater than start date"
-     },
     scheduled:{
         type: Schema.Types.ObjectId, ref: "Schedule"
-     }
+     },
+    status: {
+        type: String,
+        enum: ["Incomplete", "Complete"],
+        default: "Incomplete",
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
   });
   
 module.exports = mongoose.model("Class", ClassSchema);
