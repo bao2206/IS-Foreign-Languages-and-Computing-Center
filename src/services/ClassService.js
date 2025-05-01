@@ -1,11 +1,12 @@
 const ClassModel = require('../models/ClassModel');
 const ScheduleModel = require('../models/ScheduleModel');
+
 const mongoose = require('mongoose');
 
 class ClassService {
     // Class CRUD operations
     async getAllClasses() {
-        return await ClassModel.find().populate('students');
+        return await ClassModel.find();
     }
 
     async getClassById(classId) {
@@ -28,12 +29,58 @@ class ClassService {
         return await ClassModel.findByIdAndDelete(classId);
     }
 
+    async addTeacherToClass(classId, teacherId) {
+        const teacher = await mongoose.model('User').findById(teacherId)
+            .populate({
+                path: 'authId',
+                populate: { path: 'role' }
+            });;
+        if (!teacher) {
+            throw new Error('Teacher not found');
+        }
+        
+        if (teacher.authId.role.name !== 'teacher') {
+            throw new Error('User is not a teacher');
+        }
+
+        const classData = await ClassModel.findById(classId);
+
+        if (classData.teacher.includes(teacherId)) {
+            throw new Error('User is already a teacher of this class');
+        }
+
+        return await ClassModel.findByIdAndUpdate(
+            classId,
+            { $push: { teacher: teacherId } },
+            { new: true }
+        );
+    }        
 
     async addStudentToClass(classId, studentId) {
+        const student = await mongoose.model('User').findById(studentId)
+            .populate({
+                path: 'authId',
+                populate: { path: 'role' }
+            })
+        
+        if (!student) {
+            throw new Error('Student not found');
+        }
+
+        if (student.authId.role.name !== 'student') {
+            throw new Error('User is not a student');
+        }
+
+        const classData = await ClassModel.findById(classId);
+
+        if (classData.students.includes(studentId)) {
+            throw new Error('User is already a student of this class');
+        }
+
         return await ClassModel.findByIdAndUpdate(
-        classId,
-        { $addToSet: { students: studentId } },
-        { new: true }
+            classId,
+            { $push: { students: studentId } },
+            { new: true }
         );
     }
 
@@ -77,8 +124,6 @@ class ClassService {
     // startTime: start time of the shift
     // endTime: end time of the shift
     async autoCreateSchedule(classId, numberOfShift, startDate, startTime, endTime) {
-        const startDate = new Date(startDate);
-
         const classData = await ClassModel.findById(classId);
         if (!classData) {
             throw new Error('Class not found');
@@ -139,4 +184,4 @@ class ClassService {
     
 }
 
-const ClassServiceInstance = new ClassService();
+module.exports = new ClassService();
