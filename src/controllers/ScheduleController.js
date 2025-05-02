@@ -13,9 +13,7 @@ class ScheduleController {
     }
 
     async getSchedules(req, res) {
-        try {
-            console.log(req.body)
-            
+        try {     
             const schedules = await ShedulesService.getSchedules(req.body.config);
             if (!schedules) {
                 return res.status(404).json({ message: 'Schedules not found' });
@@ -40,8 +38,7 @@ class ScheduleController {
 
     async deleteSchedule(req, res) {
         try {
-            const scheduleId = req.params.id;
-            const deletedSchedule = await ShedulesService.deleteSchedule(scheduleId);
+            const deletedSchedule = await ShedulesService.deleteSchedule(req.body.config);
             if (!deletedSchedule) {
                 return res.status(404).json({ message: 'Schedule not found' });
             }

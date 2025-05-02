@@ -14,7 +14,7 @@ class SchedulesService {
             config.populates = [];
         }
         if (!config.style) {
-            config.style = "getAll";
+            config.style = "";
         }
         switch (config.style) {
             case "getByTeacherId":
@@ -27,11 +27,13 @@ class SchedulesService {
                 query = ScheduleModel.findById(config.scheduleId)
                 break;
             case "getByStudentId":
-                const classId = await ClassModel.findOne({ students: config.studentId }).select('_id');
-                query = ScheduleModel.find({ classId: classId }).populate('classId')
+                const classData = await ClassModel.findOne({ students: config.studentId }).select('_id');
+                if (!classData) {
+                    throw new Error('Class not found for this student');
+                }
+                query = ScheduleModel.find({ classId: classData._id }).populate('classId');
                 break;
-        }
-
+        } 
         const scheduleData = await query.exec();
         return scheduleData;
     }
@@ -145,8 +147,15 @@ class SchedulesService {
         );
     }
 
-    async deleteSchedule(scheduleId) {
-        return await ScheduleModel.findByIdAndDelete(scheduleId);
+    async deleteSchedule(config) {
+        switch (config.style) {
+            case "deleteSchedule":
+                return await ScheduleModel.findByIdAndDelete(config.scheduleId);
+            case "deleteAllSchedules":
+                return await this.deleteScheduleByClassId(config.classId);
+            default:
+                throw new Error('Invalid style for deleting schedule');
+        }
     }
 }
 

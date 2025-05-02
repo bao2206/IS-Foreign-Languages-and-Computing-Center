@@ -1,5 +1,6 @@
+
 const mongoose = require('mongoose');
-const {Schema} = mongoose.Schema;
+const {Schema} = mongoose;
 
 const ExamSchema = new Schema({
     examName: {
@@ -28,12 +29,14 @@ const ExamSchema = new Schema({
         default: "Scheduled"
     },
     room: {
-        type: String, required: true
+        type: String, 
+        default: "Waiting for update",
+        required: false
     },
     students: [{
         type: Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: false
     }],
 });
 

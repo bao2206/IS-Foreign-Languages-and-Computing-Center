@@ -82,13 +82,12 @@ class ClassController {
     }
 
     async deleteClass(req, res) {
-        try {
-            const classId = req.body.classId;
-            const classData = await ClassService.deleteClass(classId);
+        try {     
+            const classData = await ClassService.deleteClass(req.body.classId);
             if (!classData) {
                 return res.status(404).json({ message: 'Class not found' });
             }
-            return res.status(200).json({ message: 'Class deleted successfully' });
+            return res.status(200).json(classData);
         } catch (error) {
             throw new ErrorCustom(error.message, 500);
         }

@@ -21,5 +21,7 @@ router.post("/create", asyncHandle(classController.createClass));
 router.put("/update", asyncHandle(classController.updateClass));
 router.put("/removeStudent/:classId", asyncHandle(classController.removeStudentFromClass));
 
+router.delete("/delete", asyncHandle(classController.deleteClass));
+
 
 module.exports = router;

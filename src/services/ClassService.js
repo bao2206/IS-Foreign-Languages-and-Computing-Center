@@ -1,5 +1,7 @@
+const { config } = require('dotenv');
 const ClassModel = require('../models/ClassModel');
 const ScheduleModel = require('../models/ScheduleModel');
+const ShedulesService = require('../services/SchedulesService');
 
 const mongoose = require('mongoose');
 
@@ -155,7 +157,24 @@ class ClassService {
     }
 
     async deleteClass(classId) {
-        return await ClassModel.findByIdAndDelete(classId);
+        const schedules = await ShedulesService.getSchedules({
+
+            style: "getByClassId",
+            classId: classId
+        });
+        console.log();
+        
+        if (schedules.length > 0) {
+            const schedulesDel = await ShedulesService.deleteSchedule({
+                style: "deleteAllSchedules",
+                classId: classId
+            });
+        }
+        const classData = await ClassModel.findByIdAndDelete(classId);
+        if (!classData) {
+            throw new Error('Class not found');
+        }
+        return classData;
     } 
 }
 

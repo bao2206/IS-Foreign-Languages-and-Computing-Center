@@ -10,5 +10,6 @@ router.use("/permission", require("./permissionRoute"));
 router.use("/courses", require("./courseRoute"));
 router.use("/classes", require("./classRoute"));
 router.use("/schedules", require("./scheduleRoute"));
+router.use("/exams", require("./examRoute"));
 
 module.exports = router;
