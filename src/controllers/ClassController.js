@@ -12,62 +12,52 @@ class ClassController {
         }
     }
 
-    async getAllClasses(req, res) {
-        try {
-            const classes = await ClassService.getAllClasses();
-            return res.status(200).json(classes);
-        } catch (error) {
-            throw new ErrorCustom(error.message, 500);
-        }
-    }
 
-    async getClassById(req, res) {
+    // Requires a config object with the following properties:
+    // - style: "getAll", "getByClassesId", "getByCourseId", "getByTeacherId"
+    // - populates: an array of strings indicating which fields to populate as "students", "teachers", "course", or "All"
+    // - classId: the ID of the class to retrieve (if style is "getByClassesId")
+    // - courseId: the ID of the course to retrieve (if style is "getByCourseId")
+    // - teacherId: the ID of the teacher to retrieve (if style is "getByTeacherId")
+    // Example:
+    // {
+    //     "config": {
+    //         "style": "getAll",
+    //         "populates": [
+    //             "course",
+    //             "teachers"
+    //         ]
+    //     }
+    // }
+    async getClassInformation(req, res) {
         try {
-            const classId = req.body.classId;
-            const classData = await ClassService.getClassById(req.body.id);
+            const config = req.body.config;
+            const classData = await ClassService.getClassesInformation(config);
             if (!classData) {
                 return res.status(404).json({ message: 'Class not found' });
             }
+            
             return res.status(200).json(classData);
         } catch (error) {
             throw new ErrorCustom(error.message, 500);
         }
     }
+
+    // Requires a config object with the following properties:
+
+    // Example:
+    // {
+    //     "config": {
+    //         "style": "addStudent",
+    //         "classId": "6814502829b9dc01713b0b94",
+    //         "studentId": "68033539631c5c16fbcc2f61"
+    //     }
+    // }
 
     async updateClass(req, res) {
         try {
-            const classId = req.body.classId;
-            const classData = req.body.classData;
-            const updated = await ClassService.updateClass(req.body.id, classData);
-            if (!updated) {
-                return res.status(404).json({ message: 'Class not found' });
-            }
-            return res.status(200).json(updated);
-        } catch (error) {
-            throw new ErrorCustom(error.message, 500);
-        }
-    }
-
-    async addTeacherToClass(req, res) {
-        try { 
-            const classId = req.body.classId;
-            const teacherId = req.body.teacherId;
-            
-            const classData = await ClassService.addTeacherToClass(classId, teacherId);
-            if (!classData) {
-                return res.status(404).json({ message: 'Class not found' });
-            }
-            return res.status(200).json(classData);
-        } catch (error) {
-            throw new ErrorCustom(error.message, 500);
-        }
-    }
-
-    async addStudentToClass(req, res) {
-        try {
-            const classId = req.body.classId;
-            const studentId = req.body.studentId;
-            const classData = await ClassService.addStudentToClass(classId, studentId);
+            const config = req.body.config;
+            const classData = await ClassService.configUpdateClass(config);
             if (!classData) {
                 return res.status(404).json({ message: 'Class not found' });
             }

@@ -12,16 +12,13 @@ router.get('/',
 
 // Define routes for class operations
 // Get methods
-router.get("/getAll", asyncHandle(classController.getAllClasses));
-router.get("/getById/", asyncHandle(classController.getClassById));
+router.get("/classInf", asyncHandle(classController.getClassInformation));
 
 // Post methods
 router.post("/create", asyncHandle(classController.createClass));
 
 // Put methods
 router.put("/update", asyncHandle(classController.updateClass));
-router.put("/addTeacher", asyncHandle(classController.addTeacherToClass));
-router.put("/addStudent", asyncHandle(classController.addStudentToClass));
 router.put("/removeStudent/:classId", asyncHandle(classController.removeStudentFromClass));
 
 

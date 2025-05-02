@@ -10,10 +10,10 @@ const ClassSchema = new Schema({
         max: 10
     },
     courseId: { type: Schema.Types.ObjectId, ref: "Course" },
-    teacher: [{ type: Schema.Types.ObjectId, ref: "Teacher" }],
+    teachers: [{ type: Schema.Types.ObjectId, ref: "Teacher" }],
     students: [{ type: Schema.Types.ObjectId, ref: "Student" }],
     quantity: { type: Number, 
-        required: [false, "Please provide a quantity"],
+        required: [true, "Please provide a quantity"],
         min: [1, "Quantity must be greater than 1"],
      },
     materials: [String],

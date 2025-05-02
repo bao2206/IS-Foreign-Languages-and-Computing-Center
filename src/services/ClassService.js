@@ -5,16 +5,70 @@ const mongoose = require('mongoose');
 
 class ClassService {
     // Class CRUD operations
-    async getAllClasses() {
-        return await ClassModel.find();
-    }
+    async getClassesInformation(config) {
+        let query;
+        if (!config) {
+            throw new Error('Config is required');
+        }
+        if (!config.populates) {
+            config.populates = [];
+        }
+        if (!config.style) {
+            config.style = "getAll";
+        }
+        switch (config.style) {
+            case "getAll":
+                query = ClassModel.find()
+                break;
+            case "getByClassesId":
+                query = ClassModel.findById(config.classId)
+                break;
+            case "getByCourseId":
+                query = ClassModel.find({ courseId: config.courseId })
+                break;
+            case "getByTeacherId":
+                query = ClassModel.find({ teachers: config.teacherId })
+                break;
+        }
+        config.populates.forEach((populate) => {
+            switch (populate) {
+                case "students":
+                    query = query.populate({ path: 'students', model: 'User' })
+                    break;
+                case "teachers":
+                    query = query.populate({ path: 'teachers', model: 'User' })
+                    break;
+                case "course":
+                    query = query.populate('courseId')
+                    break;
+                case "All":
+                    query = query.populate('User')
+                                .populate({ path: 'students', model: 'User' })
+                                .populate({ path: 'teachers', model: 'User' })
+                                .populate('courseId')
+                    break;
+            }
+        })
 
-    async getClassById(classId) {
-        return await ClassModel.findById(classId).populate('students');
+        const classData = await query.exec();
+        return classData;
+        
     }
 
     async createClass(classData) {
         return await ClassModel.create(classData);
+    }
+
+    async configUpdateClass(config) {
+        
+        switch (config.style) {
+            case "updateClass":
+                return await this.updateClass(config.classId, config.classData);
+            case "addTeacher":
+                return await this.addTeacherToClass(config.classId, config.teacherId);
+            case "addStudent":
+                return await this.addStudentToClass(config.classId, config.studentId);
+        }
     }
 
     async updateClass(classId, classData) {
@@ -23,10 +77,6 @@ class ClassService {
         classData,
         { new: true, runValidators: true }
         );
-    }
-
-    async deleteClass(classId) {
-        return await ClassModel.findByIdAndDelete(classId);
     }
 
     async addTeacherToClass(classId, teacherId) {
@@ -45,13 +95,13 @@ class ClassService {
 
         const classData = await ClassModel.findById(classId);
 
-        if (classData.teacher.includes(teacherId)) {
+        if (classData.teachers.includes(teacherId)) {
             throw new Error('User is already a teacher of this class');
         }
 
         return await ClassModel.findByIdAndUpdate(
             classId,
-            { $push: { teacher: teacherId } },
+            { $push: { teachers: teacherId } },
             { new: true }
         );
     }        
@@ -77,6 +127,15 @@ class ClassService {
             throw new Error('User is already a student of this class');
         }
 
+        const quantity = classData.quantity || classData.students.length + 1;
+        if (quantity <= classData.students.length) {
+            throw new Error('Class is full');
+        }
+        
+        if (classData.status === 'Complete') {
+            throw new Error('Class is already complete');
+        }
+
         return await ClassModel.findByIdAndUpdate(
             classId,
             { $push: { students: studentId } },
@@ -92,96 +151,9 @@ class ClassService {
         );
     }
 
-    // Schedule CRUD operations
-    async getAllSchedules() {
-        return await ScheduleModel.find().populate('classId');
-    }
-
-    async getScheduleById(scheduleId) {
-        return await ScheduleModel.findById(scheduleId).populate('classId');
-    }
-
-    async  getScheduleByClassId(classId) {
-        return await ScheduleModel.find({ classId }).populate('classId');
-    }
-
-    async createSchedule(scheduleData) {
-        return await ScheduleModel.create(scheduleData);
-    }
-
-    async updateSchedule(scheduleId, scheduleData) {
-        return await ScheduleModel.findByIdAndUpdate(
-        scheduleId,
-        scheduleData,
-        { new: true, runValidators: true }
-        );
-    }
-
-    // Auto-generate schedules for a class
-    // classId: ID of the class for which to create schedules
-    // numberOfShift: number of shifts to be created
-    // startDate: date to start creating schedules
-    // startTime: start time of the shift
-    // endTime: end time of the shift
-    async autoCreateSchedule(classId, numberOfShift, startDate, startTime, endTime) {
-        const classData = await ClassModel.findById(classId);
-        if (!classData) {
-            throw new Error('Class not found');
-        }
-
-        const schedules = [];
-        for (let i = 0; i < numberOfShift; i++) {
-            const scheduleDate = new Date(startDate);
-            scheduleDate.setDate(scheduleDate.getDate());
-
-            const schedule = {
-                classId: classId,
-                room: "Waiting for update",
-                date: scheduleDate,
-                startTime: startTime,
-                endTime: endTime,
-            };
-
-            schedules.push(schedule);
-        }
-        const createdSchedules = await ScheduleModel.insertMany(schedules);
-        return createdSchedules;
-    }
-
-    async deleteScheduleByClassId(classId) {
-        return await ScheduleModel.deleteMany({ classId });
-    }
-
-    // Update room for all schedules of a class
-    async updateRoomForAllScheduleByClassId(classId, room) {
-        return await ScheduleModel.updateMany(
-            { classId },
-            { room: room },
-            { new: true, runValidators: true }
-        );
-    }
-
-    async updateRoomForSchedule(scheduleId, room) {
-        return await ScheduleModel.findByIdAndUpdate(
-            scheduleId,
-            { room: room },
-            { new: true, runValidators: true }
-        );
-    }
-
-    async updateStatusSchedule(scheduleId, status) {
-        return await ScheduleModel.findByIdAndUpdate(
-            scheduleId,
-            { status: status },
-            { new: true, runValidators: true }
-        );
-    }
-
-    async deleteSchedule(scheduleId) {
-        return await ScheduleModel.findByIdAndDelete(scheduleId);
-    }
-
-    
+    async deleteClass(classId) {
+        return await ClassModel.findByIdAndDelete(classId);
+    } 
 }
 
 module.exports = new ClassService();
