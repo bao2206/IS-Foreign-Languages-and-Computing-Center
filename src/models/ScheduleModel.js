@@ -1,3 +1,4 @@
+const { text } = require('express');
 const mongoose = require('mongoose');
 const {Schema} = mongoose;
 
@@ -7,8 +8,13 @@ const ScheduleSchema = new Schema({
         ref: 'Class',
         required: true
     },
+    teacher:{
+        type: Schema.Types.ObjectId,
+        ref: 'Teacher',
+        required: false
+    },
     room: {
-        type: String, required: true
+        type: String, required: false
     },
     date:{
         type: Date,

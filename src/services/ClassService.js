@@ -29,6 +29,9 @@ class ClassService {
             case "getByTeacherId":
                 query = ClassModel.find({ teachers: config.teacherId })
                 break;
+            case "getByStudentId":
+                query = ClassModel.find({ students: config.studentId })
+                break;
         }
         config.populates.forEach((populate) => {
             switch (populate) {
