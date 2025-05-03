@@ -6,20 +6,34 @@ class CourseService {
         return await courseModel.create(data);
     }
     
-    async getAllCourses() {
-        return await courseModel.find({});
-    }
-    
-    async getCourseById(id) {
-        return await courseModel.findById(id);
-    }
+    async getCourses(config) {
+        let query;
+        if (!config) {
+            throw new Error('Config is required');
+        }
+        if (!config.action) {
+            config.action = "getAll";
+        }
+        switch (config.action) {
+            case "getAll":
+                query = courseModel.find()
+                break;
+            case "getByCourseId":
+                query = courseModel.findById(config.courseId)
+                break;
+            case "getSpecial":
+                query = courseModel.find({ is_special: true })
+                break;
+            case "getByStatus":
+                query = courseModel.find({ status: config.status })
+                break;
+            case "getBySlug":
+                query = courseModel.findOne({ slug: config.slug })
+                break;
+        }
 
-    async getSpecialCourse() {
-        return await courseModel.find({ is_special: true });
-    }
-
-    async getCourseBySlug(slug) {
-        return await courseModel.findOne({ slug: slug });
+        const courseData = await query.exec();
+        return courseData;
     }
     
     async updateCourse(id, data) {
@@ -32,19 +46,31 @@ class CourseService {
 
     // Registration methods
 
-    async getAllRegistrations() {
-        return await CourseRegistrationModel.find({}).populate('courseId').populate('studentId');
-    }
+    async getRegistrations(config) {
+        let query;
+        if (!config) {
+            throw new Error('Config is required');
+        }
+        if (!config.action) {
+            config.action = "getAll";
+        }
+        switch (config.action) {
+            case "getAll":
+                query = CourseRegistrationModel.find()
+                break;
+            case "getById":
+                query = CourseRegistrationModel.findById(config.id)
+                break;
+            case "getByStudentId":
+                query = CourseRegistrationModel.find({ studentId: config.studentId })
+                break;
+            case "getByEmployeeId":
+                query = CourseRegistrationModel.find({ employeeId: config.employeeId })
+                break;
+        }
 
-    async getRegistrationById(id) {
-        return await CourseRegistrationModel.findById(id).populate('courseId').populate('studentId');
-
-    }
-
-    async getRegistrationByUserId(id) {
-        return await CourseRegistrationModel.find({
-            studentId: id,
-        }).populate('courseId');
+        const registrationData = await query.exec();
+        return registrationData;
     }
     
     async registerForCourse(courseId, studentId) {
@@ -53,15 +79,24 @@ class CourseService {
             studentId: studentId,
         });
     }
-    
-    async changeStatusRegistration(id, status) {
-        return await CourseRegistrationModel.findByIdAndUpdate(id, { status: status }, { new: true });
+
+    async updateRegistration(config) {
+        switch (config.action) {
+            case "updateRegistration":
+                return await CourseRegistrationModel.findByIdAndUpdate(config.id, config.data, { new: true });
+            case "changeStatus":
+                return await CourseRegistrationModel.findByIdAndUpdate(config.id, { status: config.status }, { new: true });
+            case "respondToRegistration":
+                return await this.repondToRegistration(config.id, config.employeeId, config.status);
+        }
     }
 
-    async respondToRegistration(id, employeeId, status) {
-        console.log("ID", id);
-        
-        return await CourseRegistrationModel.findByIdAndUpdate(id, {employeeId: employeeId, status: status }, { new: true });
+    async repondToRegistration(id, employeeId, status) {
+        return await CourseRegistrationModel.findByIdAndUpdate(id, { employeeId: employeeId, status: status }, { new: true });
+    }
+    
+    async deleteRegistration(id) {
+        return await CourseRegistrationModel.findByIdAndDelete(id);
     }
 }
 

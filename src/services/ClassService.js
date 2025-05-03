@@ -15,10 +15,10 @@ class ClassService {
         if (!config.populates) {
             config.populates = [];
         }
-        if (!config.style) {
-            config.style = "getAll";
+        if (!config.action) {
+            config.action = "getAll";
         }
-        switch (config.style) {
+        switch (config.action) {
             case "getAll":
                 query = ClassModel.find()
                 break;
@@ -66,7 +66,7 @@ class ClassService {
 
     async configUpdateClass(config) {
         
-        switch (config.style) {
+        switch (config.action) {
             case "updateClass":
                 return await this.updateClass(config.classId, config.classData);
             case "addTeacher":
@@ -158,15 +158,14 @@ class ClassService {
 
     async deleteClass(classId) {
         const schedules = await ShedulesService.getSchedules({
-
-            style: "getByClassId",
+            action: "getByClassId",
             classId: classId
         });
         console.log();
         
         if (schedules.length > 0) {
             const schedulesDel = await ShedulesService.deleteSchedule({
-                style: "deleteAllSchedules",
+                action: "deleteAllSchedules",
                 classId: classId
             });
         }

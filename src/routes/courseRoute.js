@@ -9,20 +9,16 @@ router.get('/',
     }
 );
 
-router.get("/getAll", asyncHandle(courseController.getAllCourses));
-router.get("/getSpecial", asyncHandle(courseController.getSpecialCourse));
-router.get("/getById/:id", asyncHandle(courseController.getCourseById));
+router.get("/get", asyncHandle(courseController.getCourse));
 router.post("/create", asyncHandle(courseController.createCourse));
-router.put("/update/:id", asyncHandle(courseController.updateCourse));
-router.delete("/delete/:id", asyncHandle(courseController.deleteCourse));
+router.put("/update", asyncHandle(courseController.updateCourse));
+router.delete("/delete", asyncHandle(courseController.deleteCourse));
 
 // Registration methods
-router.get("/registration", asyncHandle(courseController.getAllRegistrations));
-router.get("/registration/:id", asyncHandle(courseController.getRegistrationById));
-router.get("/registration/user/:id", asyncHandle(courseController.getRegistrationByUserId));
+router.get("/registration", asyncHandle(courseController.getRegistratons));
 router.post("/register", asyncHandle(courseController.registerForCourse));
-router.put("/registration/:id", asyncHandle(courseController.changeStatusRegistration));
-router.put("/registration/respond/:id", asyncHandle(courseController.respondToRegistration));
+router.put("/registration", asyncHandle(courseController.updateRegistration));
+
 
 module.exports = router;
 

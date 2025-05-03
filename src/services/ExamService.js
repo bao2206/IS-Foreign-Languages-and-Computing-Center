@@ -12,10 +12,10 @@ class ExamService {
         if (!config.populates) {
             config.populates = [];
         }
-        if (!config.style) {
-            config.style = "getAll";
+        if (!config.action) {
+            config.action = "getAll";
         }
-        switch (config.style) {
+        switch (config.action) {
             case "getAll":
                 query = Exam.find()
                 break;
@@ -62,7 +62,7 @@ class ExamService {
     }
  
     async updateExam(config) {
-        switch (config.style) {
+        switch (config.action) {
             case "updateExam":
                 return await Exam.findByIdAndUpdate(config.examId, config.examData, { new: true });
             case "addStudent":
@@ -78,7 +78,7 @@ class ExamService {
             case "changeRoom":
                 return await Exam.findByIdAndUpdate(config.examId, { room: config.room }, { new: true });
             default:
-                throw new Error('Invalid style for updating exam');
+                throw new Error('Invalid action for updating exam');
         }
     }
 

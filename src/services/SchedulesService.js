@@ -13,10 +13,10 @@ class SchedulesService {
         if (!config.populates) {
             config.populates = [];
         }
-        if (!config.style) {
-            config.style = "";
+        if (!config.action) {
+            config.action = "";
         }
-        switch (config.style) {
+        switch (config.action) {
             case "getByTeacherId":
                 query = ScheduleModel.find({ teacher: config.teacherId }).populate('teacher')
                 break;
@@ -40,13 +40,13 @@ class SchedulesService {
 
 
     async createSchedule(config) {
-        switch (config.style) {
+        switch (config.action) {
             case "createSchedule":
                 return await ScheduleModel.create(config.scheduleData);
             case "autoCreateSchedule":
                 return await this.autoCreateSchedule(config.scheduleData);
             default:
-                throw new Error('Invalid style for creating schedule');
+                throw new Error('Invalid action for creating schedule');
         }
     }
 
@@ -99,7 +99,7 @@ class SchedulesService {
     }
 
     async updateSchedules(config) {
-        switch (config.style) {
+        switch (config.action) {
             case "updateSchedule":
                 return await this.updateSchedule(config.scheduleId, config.scheduleData);
             case "updateRoom":
@@ -109,7 +109,7 @@ class SchedulesService {
             case "updateStatus":
                 return await this.updateStatusSchedule(config.scheduleId, config.status);
             default:
-                throw new Error('Invalid style for updating schedule');
+                throw new Error('Invalid action for updating schedule');
         }
     }
 
@@ -148,13 +148,13 @@ class SchedulesService {
     }
 
     async deleteSchedule(config) {
-        switch (config.style) {
+        switch (config.action) {
             case "deleteSchedule":
                 return await ScheduleModel.findByIdAndDelete(config.scheduleId);
             case "deleteAllSchedules":
                 return await this.deleteScheduleByClassId(config.classId);
             default:
-                throw new Error('Invalid style for deleting schedule');
+                throw new Error('Invalid action for deleting schedule');
         }
     }
 }
