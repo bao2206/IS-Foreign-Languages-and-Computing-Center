@@ -10,6 +10,8 @@ const redis = require("../utils/redis");
 const RoleService = require("../services/RoleService");
 const userModel = require("../models/UserModel");
 const AuthService = require("../services/AuthService");
+const PermissionService = require("../services/PermissionService");
+
 const crypto = require("crypto");
 const {
   BadRequestError,
@@ -285,6 +287,67 @@ class UserController {
 
     return res.status(200).json({
       message: "Password reset successfully",
+    });
+  }
+  async addCustomPermissions(req, res) {
+    const { id } = req.params;
+    const { permissions } = req.body;
+    if (!Array.isArray(permissions) || permissions.length === 0) {
+      throw new ErrorCustom("Permissions must be a non-empty array", 400);
+    }
+    const allPermission = await PermissionService.findAllPermission();
+    const validPermissionIds = new Set(allPermission.map((p) => String(p._id)));
+
+    const invalidPermissions = permissions.filter(
+      (p) => !validPermissionIds.has(p)
+    );
+    if (invalidPermissions.length > 0) {
+      throw new ErrorCustom(
+        `Invalid permission IDs: ${invalidPermissions.join(", ")}`,
+        400
+      );
+    }
+    const user = await UserService.addMultiplePermissions(id, permissions);
+
+    if (!user) throw new NotFoundError("User not found");
+
+    res.status(200).json({
+      message: "Permissions added successfully",
+      data: user,
+    });
+  }
+  async removeCustomPermission(req, res) {
+    const { id, permissionId } = req.params;
+
+    const userId = await UserService.findByIdOfAuth(id);
+    if (!userId) throw new NotFoundError("User not found");
+    const permission = await PermissionService.findId(permissionId);
+    if (!permission) throw new NotFoundError("Permission not found");
+    // console.log("Permission", userId);
+    const exits = await UserService.checkCustomPermission(userId, permissionId);
+    if (!exits)
+      throw new NotFoundError("Permission not found in user's permissions");
+    console.log("Exits", exits);
+    const user = await UserService.removeCustomPermission(id, permissionId);
+    if (!user) throw new NotFoundError("User not found");
+
+    res.status(200).json({
+      message: "Permission removed successfully",
+      data: user,
+    });
+  }
+  async updateRole(req, res) {
+    const { id } = req.params;
+    const {role_id} = req.body;
+    const userId = await UserService.findByIdOfAuth(id);
+    if (!userId) throw new NotFoundError("User not found");
+    const role = await RoleService.findRoleById(role_id);
+    // const role = await RoleService.getAllRoles();
+    if(!role) throw new NotFoundError("Role not found");
+    const updatedUser = await UserService.updateUserRole(userId, role);
+    res.status(200).json({
+      message: "User role updated successfully",
+      data: updatedUser,
     });
   }
 }

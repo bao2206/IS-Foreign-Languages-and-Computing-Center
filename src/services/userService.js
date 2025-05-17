@@ -3,17 +3,18 @@ const authModel = require("../models/AuthModel");
 
 class UserService {
   async getAllUsers(query, skip, parsedLimit) {
-    return await userModel.find(query)
-    .populate({
-      path: "authId",
-      select: "username role",
-      populate: {
-        path: "role",
-        select: "name",
-      },
-    })
-    .skip(skip)
-    .limit(parsedLimit)
+    return await userModel
+      .find(query)
+      .populate({
+        path: "authId",
+        select: "username role",
+        populate: {
+          path: "role",
+          select: "name",
+        },
+      })
+      .skip(skip)
+      .limit(parsedLimit);
   }
   async checkEmail(email) {
     return await userModel.findOne({ email });
@@ -82,6 +83,44 @@ class UserService {
     }
 
     return await user.save();
+  }
+  async findByIdOfAuth(id){
+    return await authModel.findById(id);
+  }
+  async updateDeleteCustomPermission(id) {
+    return await authModel.updateMany(
+      { customPermission: id },
+      { $pull: { customPermission: id } }
+    );
+  }
+  async addMultiplePermissions(userId, permissions) {
+    return await authModel.findByIdAndUpdate(
+      userId,
+      { $addToSet: { customPermission: { $each: permissions } } },
+      { new: true }
+    );
+  }
+  async checkCustomPermission(userId, permissionId) {
+    // console.log()
+    return await userId.customPermission.some(
+      (perm) => perm.toString() === permissionId
+    );
+  }
+  async removeCustomPermission(userId, permissionId) {
+    return await authModel.findByIdAndUpdate(
+      userId,
+      { $pull: { customPermission: {$in :permissionId} } },
+      { new: true }
+    );
+  }
+
+
+  async updateUserRole(userId, roleId) {
+    return await authModel.findByIdAndUpdate(
+      userId,
+      { role: roleId },
+      { new: true }
+    ).populate('role');
   }
 }
 

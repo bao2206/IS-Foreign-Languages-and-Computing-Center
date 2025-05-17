@@ -45,6 +45,10 @@ const CourseSchema = new Schema({
        enum: ['active', 'inactive'],
        default: 'active'
    },
+   discount:{
+    type: Schema.Types.ObjectId,
+    ref: "Discount"
+   }
 });
 
 CourseSchema.pre("save", function(next) {

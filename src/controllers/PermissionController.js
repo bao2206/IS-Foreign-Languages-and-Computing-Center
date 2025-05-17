@@ -1,5 +1,6 @@
 const PermissionService =  require("../services/PermissionService")
 const RoleService = require("../services/RoleService")
+const UserService = require("../services/userService")
 const slugify = require('slugify');
 const {ErrorCustom, NotFoundError} = require("../core/errorCustom");
 class PermissionController {
@@ -35,10 +36,11 @@ class PermissionController {
     async deletePermission(req, res) {
         const {id} = req.params;
         const idPermission = await PermissionService.findId(id);
-        if(!idPermission) throw new NotFoundError("Id is required");
+        if(!idPermission) throw new NotFoundError("Id not found");
         const permission = await PermissionService.deletePermission(id);
         if(!permission) throw new ErrorCustom("Permission not found", 431);
         await RoleService.updatePerrmissionDelete(id);
+        await UserService.updateDeleteCustomPermission(id);
         return res.status(200).json({
             message: "success",
             data: {

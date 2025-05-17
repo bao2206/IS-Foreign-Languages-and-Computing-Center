@@ -35,7 +35,7 @@ const AuthSchema = new Schema({
     resetPasswordExpires: { type: Date },
     createdAt: {type: Date, default: Date.now},
     updatedAt: {type: Date, default: Date.now},
-}, { timestamps: true }); ;
+}, { timestamps: true }); 
 AuthSchema.pre('save', async function(next){
     const user = this;
 

@@ -8,6 +8,7 @@ const checkPermission = require('../middlewares/checkPermission');
 const {asyncHandle} = require('../utils/asyncHandle');
 router.get('/', authMiddleware, asyncHandle(userController.getAllUsers));
 // router.get('/', userController.getAllUsers);
+// tạo nhân viên mới 
 router.post('/create', authMiddleware,checkPermission("create_user") ,asyncHandle(userController.createStaff));
 router.get('/register', authMiddleware,userController.getUsertoCreateAccount);
 router.post('/register/:id', userController.registerAccount);
@@ -20,6 +21,21 @@ router.put("/info/:id", authMiddleware ,asyncHandle(userController.getUserUpdate
 router.put("/change-password", authMiddleware, asyncHandle(userController.changePassword));
 router.post("/forgot-password", asyncHandle(userController.forgotPassword));
 router.put("/reset-password/:token", asyncHandle(userController.resetPassword));
+
+router.put("/update-role/:id", authMiddleware, checkPermission("update_user"), asyncHandle(userController.updateRole));
+// phân quyền cho user
+// Thêm quyền cho user
+router.post("/:id/permissions" ,asyncHandle(userController.addCustomPermissions));
+
+// Lấy quyền của user
+// router.get("/:id/permissions", userController.getCustomPermissions);
+
+// // Set lại toàn bộ quyền cho user
+// router.put("/:id/permissions", userController.setCustomPermissions);
+
+// Xoá 1 quyền khỏi user
+router.delete("/:id/permissions/:permissionId", asyncHandle(userController.removeCustomPermission));
+
 // manage teacher
 router.get('/teachers', asyncHandle(teacherController.getAllTeachers));
 router.get('/teachers/:id', asyncHandle(teacherController.getTeacherById));

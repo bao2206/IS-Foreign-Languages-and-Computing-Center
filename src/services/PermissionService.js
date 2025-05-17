@@ -21,5 +21,9 @@ class PermissionService {
     async deletePermission(id) {
         return await PermissionModel.findByIdAndDelete(id);
     }
+    async findAllPermission(){
+        return await PermissionModel.find({}, "_id")
+    }
+    
 }
 module.exports = new PermissionService();
