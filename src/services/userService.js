@@ -1,5 +1,6 @@
 const userModel = require("../models/UserModel");
 const authModel = require("../models/AuthModel");
+const roleModel = require("../models/RoleModel");
 
 class UserService {
   async getAllUsers(query, skip, parsedLimit) {
@@ -82,6 +83,56 @@ class UserService {
     }
 
     return await user.save();
+  }
+
+  async getUsersAreStaff(){
+    return await userModel.aggregate([
+      // Nối từ User → Auth
+      {
+        $lookup: {
+          from: 'auths', // collection name của Auth
+          localField: 'authId',
+          foreignField: '_id',
+          as: 'auth'
+        }
+      },
+      { $unwind: '$auth' },
+
+      // Nối từ Auth → Role
+      {
+        $lookup: {
+          from: 'roles', // collection name của Role
+          localField: 'auth.role',
+          foreignField: '_id',
+          as: 'role'
+        }
+      },
+      { $unwind: '$role' },
+
+      // Lọc các role cần thiết
+      {
+        $match: {
+          'role.name': { $in: ['teacher', 'staff', 'consultant', 'academic'] }
+        }
+      },
+
+      // Dựng lại kết quả mong muốn
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          sex: 1,
+          email: 1,
+          citizenID: 1,
+          phone: 1,
+          address: 1,
+          avatar: 1,
+          status: 1,
+          createdAt: 1,
+          role: '$role.name'
+        }
+      }
+    ]);
   }
 }
 

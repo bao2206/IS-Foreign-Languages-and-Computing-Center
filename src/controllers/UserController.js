@@ -287,6 +287,14 @@ class UserController {
       message: "Password reset successfully",
     });
   }
+
+  async getUsersAreStaff(req, res) {
+    const users = await UserService.getUsersAreStaff();
+
+    res.status(200).json({
+      data: users,
+    });
+  }
 }
 
 module.exports = new UserController();
