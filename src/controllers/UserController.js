@@ -44,35 +44,36 @@ class UserController {
     });
   }
   async createStaff(req, res) {
-    const { name, sex, email, citizenID, phone, address, avatar } = req.body;
+    try {
+      console.log("create Staff");
+      console.log(req.body);
 
-    const newStaff = await UserService.createNewStaff(
-      name,
-      sex,
-      email,
-      citizenID,
-      phone,
-      address,
-      avatar
-    );
-    const username = generateUsername(email);
-    const password = generatePassword(8);
-    const role_id = "6800d06932b289b2fe5b0409";
-    // console.log(username, password, role_id);
+      const { name, role, email } = req.body;
 
-    const newAuth = await AuthService.createAccount(
-      username,
-      password,
-      role_id
-    );
-    newStaff.authId = newAuth._id;
-    await newStaff.save();
-    sendAccount(name, email, username, password);
-    return res.status(200).json({
-      message: "Create new staff successfully",
-      user: newStaff,
-      auth: newAuth,
-    });
+      const newStaff = await UserService.createNewStaff(req.body);
+      const username = generateUsername(email);
+      const password = generatePassword(8);
+      const role_id = await RoleService.findRole(role);
+      // console.log(username, password, role_id);
+
+      const newAuth = await AuthService.createAccount(
+        username,
+        password,
+        role_id
+      );
+      newStaff.authId = newAuth._id;
+      await newStaff.save();
+      sendAccount(name, email, username, password);
+      return res.status(200).json({
+        message: "Create new staff successfully",
+        user: newStaff,
+        auth: newAuth,
+      });
+    } catch (error) {
+      console.log(error);
+
+      throw error;
+    }
   }
 
   async getUsertoCreateAccount(req, res) {
@@ -338,12 +339,12 @@ class UserController {
   }
   async updateRole(req, res) {
     const { id } = req.params;
-    const {role_id} = req.body;
+    const { role_id } = req.body;
     const userId = await UserService.findByIdOfAuth(id);
     if (!userId) throw new NotFoundError("User not found");
     const role = await RoleService.findRoleById(role_id);
     // const role = await RoleService.getAllRoles();
-    if(!role) throw new NotFoundError("Role not found");
+    if (!role) throw new NotFoundError("Role not found");
     const updatedUser = await UserService.updateUserRole(userId, role);
     res.status(200).json({
       message: "User role updated successfully",

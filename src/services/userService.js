@@ -20,16 +20,15 @@ class UserService {
   async checkEmail(email) {
     return await userModel.findOne({ email });
   }
-  async createNewStaff(name, sex, email, citizenID, phone, address, avatar) {
-    return await userModel.create({
-      name,
-      sex,
-      email,
-      citizenID,
-      phone,
-      address,
-      avatar,
-    });
+  async createNewStaff(data) {
+    try {
+      delete data.role;
+      return await userModel.create(data);
+    } catch (error) {
+      console.log(error);
+
+      throw error;
+    }
   }
   async findByAuthId(authId) {
     return await userModel.findOne({ authId });
@@ -85,7 +84,7 @@ class UserService {
 
     return await user.save();
   }
-  async findByIdOfAuth(id){
+  async findByIdOfAuth(id) {
     return await authModel.findById(id);
   }
   async updateDeleteCustomPermission(id) {
@@ -110,49 +109,46 @@ class UserService {
   async removeCustomPermission(userId, permissionId) {
     return await authModel.findByIdAndUpdate(
       userId,
-      { $pull: { customPermission: {$in :permissionId} } },
+      { $pull: { customPermission: { $in: permissionId } } },
       { new: true }
     );
   }
 
-
   async updateUserRole(userId, roleId) {
-    return await authModel.findByIdAndUpdate(
-      userId,
-      { role: roleId },
-      { new: true }
-    ).populate('role');
+    return await authModel
+      .findByIdAndUpdate(userId, { role: roleId }, { new: true })
+      .populate("role");
   }
 
-  async getUsersAreStaff(){
+  async getUsersAreStaff() {
     return await userModel.aggregate([
       // Nối từ User → Auth
       {
         $lookup: {
-          from: 'auths', // collection name của Auth
-          localField: 'authId',
-          foreignField: '_id',
-          as: 'auth'
-        }
+          from: "auths", // collection name của Auth
+          localField: "authId",
+          foreignField: "_id",
+          as: "auth",
+        },
       },
-      { $unwind: '$auth' },
+      { $unwind: "$auth" },
 
       // Nối từ Auth → Role
       {
         $lookup: {
-          from: 'roles', // collection name của Role
-          localField: 'auth.role',
-          foreignField: '_id',
-          as: 'role'
-        }
+          from: "roles", // collection name của Role
+          localField: "auth.role",
+          foreignField: "_id",
+          as: "role",
+        },
       },
-      { $unwind: '$role' },
+      { $unwind: "$role" },
 
       // Lọc các role cần thiết
       {
         $match: {
-          'role.name': { $in: ['teacher', 'staff', 'consultant', 'academic'] }
-        }
+          "role.name": { $in: ["teacher", "staff", "consultant", "academic"] },
+        },
       },
 
       // Dựng lại kết quả mong muốn
@@ -168,9 +164,9 @@ class UserService {
           avatar: 1,
           status: 1,
           createdAt: 1,
-          role: '$role.name'
-        }
-      }
+          role: "$role.name",
+        },
+      },
     ]);
   }
 }
