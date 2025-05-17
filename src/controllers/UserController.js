@@ -350,6 +350,14 @@ class UserController {
       data: updatedUser,
     });
   }
+
+  async getUsersAreStaff(req, res) {
+    const users = await UserService.getUsersAreStaff();
+
+    res.status(200).json({
+      data: users,
+    });
+  }
 }
 
 module.exports = new UserController();
