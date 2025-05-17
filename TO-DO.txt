@@ -1,0 +1,7 @@
+Class Mangage
+- Create class: create class non student, non teacher, auto xếp lịch
+- update class:
+- complete class:
+- add student in class:
+- add teacher to class:
+- quản lí lịch thi:

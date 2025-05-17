@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
 // router.use("/",)
@@ -11,6 +11,8 @@ router.use("/courses", require("./courseRoute"));
 router.use("/classes", require("./classRoute"));
 router.use("/schedules", require("./scheduleRoute"));
 router.use("/exams", require("./examRoute"));
-router.use("/discount" , require("./discountRoute"));
+router.use("/discount", require("./discountRoute"));
 router.use("/payment", require("./paymentRoute"));
+
+router.use("/upload", require("./uploadRoute"));
 module.exports = router;
