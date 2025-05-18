@@ -18,18 +18,45 @@ const {
   NotFoundError,
   ForbiddenError,
 } = require("../core/errorCustom");
+const { log } = require("console");
 class UserController {
   async getAllUsers(req, res) {
+    console.log("get all user");
+
     const { role, page = 1, limit = 10, total } = req.query;
     const parsedPage = parseInt(page);
     const parsedLimit = total ? parseInt(total) : parseInt(limit);
     const skip = (parsedPage - 1) * parsedLimit;
-    let authQuery = {};
 
-    if (role) authQuery.role = role;
+    console.log(role, page, limit, total, parsedPage, parsedLimit, skip);
+
+    let authQuery = {};
+    let roleNames = [];
+
+    if (role) {
+      // Chuyển role thành mảng nếu là chuỗi phân tách bằng dấu phẩy
+      const roleArray = typeof role === "string" ? role.split(",") : [role];
+      // Gọi RoleService.findRole cho từng role
+      const rolePromises = roleArray.map((roleName) =>
+        RoleService.findRole(roleName)
+      );
+      const roles = (await Promise.all(rolePromises)).filter(
+        (role) => role !== null
+      );
+      const roleIds = roles.map((r) => r._id);
+      roleNames = roles.map((r) => r.name); // Lấy tên role
+      console.log("Role IDs:", roleIds);
+      console.log("Role Names:", roleNames);
+      if (roleIds.length > 0) {
+        authQuery.role = { $in: roleIds };
+      }
+    }
+    console.log(authQuery);
 
     const auths = await AuthService.findRole(authQuery);
     const authIds = auths.map((auth) => auth._id);
+
+    console.log("Auths:", auths);
 
     const query = {};
     if (authIds.length > 0) query.authId = { $in: authIds };
@@ -41,8 +68,10 @@ class UserController {
       total: totalUsers,
       currentPage: parsedPage,
       totalPages: Math.ceil(totalUsers / parsedLimit),
+      roleNames: roleNames, // Thêm roleNames vào response
     });
   }
+
   async createStaff(req, res) {
     try {
       console.log("create Staff");
