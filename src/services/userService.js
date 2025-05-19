@@ -8,23 +8,14 @@ class UserService {
       .find(query)
       .populate({
         path: "authId",
-        select: "role",
+        select: "username role",
         populate: {
           path: "role",
           select: "name",
         },
       })
-      .lean() // Chuyển thành plain object để xử lý
       .skip(skip)
-      .limit(parsedLimit)
-      .exec()
-      .then((users) =>
-        users.map((user) => ({
-          ...user,
-          role: user.authId?.role?.name || "N/A", // Thêm trường role
-          authId: undefined, // Xóa authId
-        }))
-      );
+      .limit(parsedLimit);
   }
   async checkEmail(email) {
     return await userModel.findOne({ email });
