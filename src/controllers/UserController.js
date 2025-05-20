@@ -11,7 +11,8 @@ const RoleService = require("../services/RoleService");
 const userModel = require("../models/UserModel");
 const AuthService = require("../services/AuthService");
 const PermissionService = require("../services/PermissionService");
-
+const mongoose = require('mongoose');
+const { Types } = mongoose;
 const crypto = require("crypto");
 const {
   BadRequestError,
@@ -20,28 +21,81 @@ const {
 } = require("../core/errorCustom");
 class UserController {
   async getAllUsers(req, res) {
-    const { role, page = 1, limit = 10, total } = req.query;
-    const parsedPage = parseInt(page);
-    const parsedLimit = total ? parseInt(total) : parseInt(limit);
-    const skip = (parsedPage - 1) * parsedLimit;
-    let authQuery = {};
+  
+      const { 
+        role, 
+        page = 1, 
+        limit = 10, 
+        search,
+        status, 
+        sex
+      } = req.query;
+      // console.log(role, search, status)
+      // Parse pagination parameters
+      const parsedPage = parseInt(page);
+      const parsedLimit = parseInt(limit);
+      const skip = (parsedPage - 1) * parsedLimit;
 
-    if (role) authQuery.role = role;
+      // Build query object
+      const query = {};
+      let flag = true;
+      // Role-based filtering
+      if (role) {
+        if (!Types.ObjectId.isValid(role)) {
+          throw new BadRequestError("Invalid role ID format");
+        }
+      
+        const auths = await AuthService.findRole({ role });
+        if (!auths || auths.length === 0) {
+          flag = false;
+          return res.status(200).json({
+            data: [],
+            total: 0,
+            currentPage: parsedPage,
+            totalPages: 0,
+            limit: parsedLimit
+          });
+        }
 
-    const auths = await AuthService.findRole(authQuery);
-    const authIds = auths.map((auth) => auth._id);
+        const authIds = auths.map((auth) => auth._id);
+        query.authId = { $in: authIds };
+      }
+      if (status) {
+        query.status = status;
+      }
 
-    const query = {};
-    if (authIds.length > 0) query.authId = { $in: authIds };
-    const totalUsers = await UserService.countUsers(query);
-    const users = await UserService.getAllUsers(query, skip, parsedLimit);
+      if (sex) {
+        query.sex = sex;
+      }
 
-    res.status(200).json({
-      data: users,
-      total: totalUsers,
-      currentPage: parsedPage,
-      totalPages: Math.ceil(totalUsers / parsedLimit),
-    });
+
+      if (search) {
+        const searchRegex = { $regex: search, $options: 'i' };
+        query.$or = [
+          { name: searchRegex },
+          { phone: searchRegex },
+          { email: searchRegex },
+          { citizenId: searchRegex }
+        ];
+      }
+      // console.log("64",query)
+      // const 
+      let totalUsers = 0;
+      // console.log(totalUsers)
+      let users = [];
+      if(flag){
+        users = await UserService.getAllUsers(query, skip, parsedLimit);
+        totalUsers = await UserService.countUsers(query);
+      }
+
+      res.status(200).json({
+        data: users,
+        total: totalUsers,
+        currentPage: parsedPage,
+        totalPages: Math.ceil(totalUsers / parsedLimit),
+        limit: parsedLimit
+      });
+   
   }
   async createStaff(req, res) {
     try {

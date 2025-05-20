@@ -1,0 +1,128 @@
+{
+	"info": {
+		"_postman_id": "your-collection-id",
+		"name": "User Search API Tests",
+		"description": "Test collection for user search functionality",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get All Users (No Filters)",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/api/users",
+				"description": "Should return all users with default pagination"
+			}
+		},
+		{
+			"name": "Search Users by Name",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/api/users?search=John",
+				"description": "Search users with name containing 'John'"
+			}
+		},
+		{
+			"name": "Search Users by Email",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/api/users?search=@example.com",
+				"description": "Search users with email containing '@example.com'"
+			}
+		},
+		{
+			"name": "Filter Users by Role",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/api/users?role=teacher",
+				"description": "Filter users with role 'teacher'"
+			}
+		},
+		{
+			"name": "Filter by Status and Sex",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/api/users?status=active&sex=male",
+				"description": "Filter active male users"
+			}
+		},
+		{
+			"name": "Search with Pagination",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/api/users?page=2&limit=5",
+				"description": "Get second page with 5 users per page"
+			}
+		},
+		{
+			"name": "Search with Custom Sorting",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/api/users?sortBy=name&sortOrder=asc",
+				"description": "Sort users by name in ascending order"
+			}
+		},
+		{
+			"name": "Combined Search and Filters",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/api/users?search=John&role=student&status=active&page=1&limit=10&sortBy=createdAt&sortOrder=desc",
+				"description": "Complex search with multiple parameters"
+			}
+		},
+		{
+			"name": "Empty Search Parameters",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/api/users?search=&role=&status=&sex=",
+				"description": "Search with empty parameters should return all users"
+			}
+		},
+		{
+			"name": "Invalid Page Number",
+			"request": {
+				"method": "GET",
+				"url": "{{base_url}}/api/users?page=0",
+				"description": "Should handle invalid page number gracefully"
+			}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"pm.test(\"Status code is 200\", function () {",
+					"    pm.response.to.have.status(200);",
+					"});",
+					"",
+					"pm.test(\"Response has required fields\", function () {",
+					"    const jsonData = pm.response.json();",
+					"    pm.expect(jsonData).to.have.property('users');",
+					"    pm.expect(jsonData).to.have.property('pagination');",
+					"    pm.expect(jsonData.pagination).to.have.property('total');",
+					"    pm.expect(jsonData.pagination).to.have.property('page');",
+					"    pm.expect(jsonData.pagination).to.have.property('totalPages');",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	]
+} 

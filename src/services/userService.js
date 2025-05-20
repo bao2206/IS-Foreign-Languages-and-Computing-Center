@@ -1,8 +1,84 @@
 const userModel = require("../models/UserModel");
 const authModel = require("../models/AuthModel");
 const roleModel = require("../models/RoleModel");
+const { NotFoundError } = require("../core/errorCustom");
 
 class UserService {
+  async findItems(searchOptions = {}) {
+    const {
+      search = '',
+      role,
+      status,
+      sex,
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc'
+    } = searchOptions;
+
+    // Build query
+    const query = {};
+    
+    // Text search across multiple fields with case-insensitive matching
+    if (search && search.trim() !== '') {
+      const searchRegex = new RegExp(search.trim(), 'i');
+      query.$or = [
+        { name: searchRegex },
+        { email: searchRegex },
+        { phone: searchRegex },
+        { citizenID: searchRegex }
+      ];
+    }
+
+    // Add filters only if they are defined and not empty
+    if (status && status.trim() !== '') query.status = status;
+    if (sex && sex.trim() !== '') query.sex = sex;
+
+    // Role filter requires finding the role ID first
+    if (role && role.trim() !== '') {
+      const roleDoc = await roleModel.findOne({ name: role.toLowerCase() });
+      if (roleDoc) {
+        const auths = await authModel.find({ role: roleDoc._id }).select('_id');
+        if (auths.length > 0) {
+          const authIds = auths.map(auth => auth._id);
+          query.authId = { $in: authIds };
+        }
+      }
+    }
+
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+
+    // Build sort object
+    const sort = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    // Execute query with pagination and populate
+    const users = await userModel
+      .find(query)
+      .populate({
+        path: 'authId',
+        select: 'username role',
+        populate: {
+          path: 'role',
+          select: 'name'
+        }
+      })
+      .sort(sort)
+      .skip(skip)
+      .limit(limit);
+
+    // Get total count for pagination
+    const total = await userModel.countDocuments(query);
+
+    return {
+      data: users,
+      total,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(total / limit)
+    };
+  }
+
   async getAllUsers(query, skip, parsedLimit) {
     return await userModel
       .find(query)
@@ -17,39 +93,33 @@ class UserService {
       .skip(skip)
       .limit(parsedLimit);
   }
+
   async checkEmail(email) {
     return await userModel.findOne({ email });
   }
-  async createNewStaff(data) {
-    try {
-      delete data.role;
-      return await userModel.create(data);
-    } catch (error) {
-      console.log(error);
 
-      throw error;
-    }
-  }
   async findByAuthId(authId) {
     return await userModel.findOne({ authId });
   }
+
   async countUsers(query) {
     return await userModel.countDocuments(query);
   }
+
   async findById(userID) {
-    try {
-      return await userModel.findById(userID);
-    } catch (error) {
-      throw error;
+    const user = await userModel.findById(userID);
+    if (!user) {
+      throw new NotFoundError("User not found");
     }
+    return user;
   }
 
   async findByUsername(username) {
-    try {
-      return await authModel.findOne({ username });
-    } catch (error) {
-      throw error;
+    const user = await authModel.findOne({ username });
+    if (!user) {
+      throw new NotFoundError("User not found");
     }
+    return user;
   }
 
   async updateUserById(userID, data) {
@@ -62,7 +132,6 @@ class UserService {
       citizenID,
       phone,
       avatar,
-      // status,
       address,
     } = data;
 
@@ -72,7 +141,6 @@ class UserService {
       ...(citizenID !== undefined && { citizenID }),
       ...(phone !== undefined && { phone }),
       ...(avatar !== undefined && { avatar }),
-      // ...(status !== undefined && { status }),
     });
 
     if (address !== undefined) {
@@ -84,90 +152,53 @@ class UserService {
 
     return await user.save();
   }
-  async findByIdOfAuth(id) {
-    return await authModel.findById(id);
+
+  async createNewStaff(data) {
+    return await userModel.create(data);
   }
-  async updateDeleteCustomPermission(id) {
-    return await authModel.updateMany(
-      { customPermission: id },
-      { $pull: { customPermission: id } }
-    );
+
+  async findByIdOfAuth(authId) {
+    return await userModel.findOne({ authId });
   }
-  async addMultiplePermissions(userId, permissions) {
+
+  async addMultiplePermissions(authId, permissions) {
     return await authModel.findByIdAndUpdate(
-      userId,
+      authId,
       { $addToSet: { customPermission: { $each: permissions } } },
       { new: true }
     );
   }
+
   async checkCustomPermission(userId, permissionId) {
-    // console.log()
-    return await userId.customPermission.some(
-      (perm) => perm.toString() === permissionId
-    );
+    const user = await authModel.findById(userId);
+    return user.customPermission.includes(permissionId);
   }
-  async removeCustomPermission(userId, permissionId) {
+
+  async removeCustomPermission(authId, permissionId) {
     return await authModel.findByIdAndUpdate(
-      userId,
-      { $pull: { customPermission: { $in: permissionId } } },
+      authId,
+      { $pull: { customPermission: permissionId } },
       { new: true }
     );
   }
 
-  async updateUserRole(userId, roleId) {
-    return await authModel
-      .findByIdAndUpdate(userId, { role: roleId }, { new: true })
-      .populate("role");
+  async updateUserRole(userId, role) {
+    return await authModel.findByIdAndUpdate(
+      userId,
+      { role: role._id },
+      { new: true }
+    );
   }
 
   async getUsersAreStaff() {
-    return await userModel.aggregate([
-      // Nối từ User → Auth
-      {
-        $lookup: {
-          from: "auths", // collection name của Auth
-          localField: "authId",
-          foreignField: "_id",
-          as: "auth",
-        },
+    return await userModel.find().populate({
+      path: "authId",
+      select: "username role",
+      populate: {
+        path: "role",
+        select: "name",
       },
-      { $unwind: "$auth" },
-
-      // Nối từ Auth → Role
-      {
-        $lookup: {
-          from: "roles", // collection name của Role
-          localField: "auth.role",
-          foreignField: "_id",
-          as: "role",
-        },
-      },
-      { $unwind: "$role" },
-
-      // Lọc các role cần thiết
-      {
-        $match: {
-          "role.name": { $in: ["teacher", "staff", "consultant", "academic"] },
-        },
-      },
-
-      // Dựng lại kết quả mong muốn
-      {
-        $project: {
-          _id: 1,
-          name: 1,
-          sex: 1,
-          email: 1,
-          citizenID: 1,
-          phone: 1,
-          address: 1,
-          avatar: 1,
-          status: 1,
-          createdAt: 1,
-          role: "$role.name",
-        },
-      },
-    ]);
+    });
   }
 }
 

@@ -7,7 +7,10 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const checkPermission = require("../middlewares/checkPermission");
 const { asyncHandle } = require("../utils/asyncHandle");
 //GET
-router.get("/", authMiddleware, asyncHandle(userController.getAllUsers));
+router.get("/", 
+  // authMiddleware,
+  // checkPermission("create_user"),
+  asyncHandle(userController.getAllUsers));
 router.get("/staff", asyncHandle(userController.getUsersAreStaff));
 
 // router.get('/', userController.getAllUsers);

@@ -1,0 +1,120 @@
+{
+  "roles": [
+    {
+      "_id": "role_teacher",
+      "name": "teacher"
+    },
+    {
+      "_id": "role_student",
+      "name": "student"
+    },
+    {
+      "_id": "role_admin",
+      "name": "admin"
+    }
+  ],
+  "auth": [
+    {
+      "_id": "auth_1",
+      "username": "john.teacher",
+      "role": "role_teacher"
+    },
+    {
+      "_id": "auth_2",
+      "username": "mary.student",
+      "role": "role_student"
+    },
+    {
+      "_id": "auth_3",
+      "username": "admin.user",
+      "role": "role_admin"
+    },
+    {
+      "_id": "auth_4",
+      "username": "sarah.teacher",
+      "role": "role_teacher"
+    },
+    {
+      "_id": "auth_5",
+      "username": "james.student",
+      "role": "role_student"
+    }
+  ],
+  "users": [
+    {
+      "_id": "user_1",
+      "name": "John Smith",
+      "email": "john.smith@example.com",
+      "phone": "1234567890",
+      "citizenID": "T123456789",
+      "sex": "male",
+      "status": "active",
+      "authId": "auth_1",
+      "address": {
+        "street": "123 Teacher St",
+        "city": "Education City",
+        "country": "Learning Land"
+      }
+    },
+    {
+      "_id": "user_2",
+      "name": "Mary Johnson",
+      "email": "mary.j@example.com",
+      "phone": "9876543210",
+      "citizenID": "S987654321",
+      "sex": "female",
+      "status": "active",
+      "authId": "auth_2",
+      "address": {
+        "street": "456 Student Ave",
+        "city": "Study City",
+        "country": "Learning Land"
+      }
+    },
+    {
+      "_id": "user_3",
+      "name": "Admin User",
+      "email": "admin@example.com",
+      "phone": "5555555555",
+      "citizenID": "A555555555",
+      "sex": "male",
+      "status": "active",
+      "authId": "auth_3",
+      "address": {
+        "street": "789 Admin Rd",
+        "city": "Control City",
+        "country": "Learning Land"
+      }
+    },
+    {
+      "_id": "user_4",
+      "name": "Sarah Williams",
+      "email": "sarah.w@example.com",
+      "phone": "4444444444",
+      "citizenID": "T444444444",
+      "sex": "female",
+      "status": "inactive",
+      "authId": "auth_4",
+      "address": {
+        "street": "321 Teacher Lane",
+        "city": "Education City",
+        "country": "Learning Land"
+      }
+    },
+    {
+      "_id": "user_5",
+      "name": "James Brown",
+      "email": "james.b@example.com",
+      "phone": "3333333333",
+      "citizenID": "S333333333",
+      "sex": "male",
+      "status": "active",
+      "authId": "auth_5",
+      "address": {
+        "street": "654 Student Blvd",
+        "city": "Study City",
+        "country": "Learning Land"
+      }
+    }
+  ]
+} 
