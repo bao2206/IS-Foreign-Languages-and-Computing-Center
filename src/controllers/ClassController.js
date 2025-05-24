@@ -4,7 +4,7 @@ const { ErrorCustom } = require("../core/errorCustom");
 class ClassController {
   async createClass(req, res) {
     try {
-      const data = req.body.classData;
+      const data = req.body;
       const classData = await ClassService.createClass(data);
       return res.status(201).json(classData);
     } catch (error) {
