@@ -49,8 +49,8 @@ const ParentSchema = new Schema({
 });
 
 // Add indexes for common queries
-ParentSchema.index({ userId: 1 }, { unique: true });
-ParentSchema.index({ status: 1 });
-ParentSchema.index({ "emergencyContact.phone": 1 });
+// ParentSchema.index({ userId: 1 }, { unique: true });
+// ParentSchema.index({ status: 1 });
+// ParentSchema.index({ "emergencyContact.phone": 1 });
 
 module.exports = mongoose.model("Parent", ParentSchema);
