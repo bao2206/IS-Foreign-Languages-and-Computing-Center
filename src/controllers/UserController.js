@@ -146,7 +146,9 @@ class UserController {
 
     // Validate required fields
     if (!username || !password || !email || !name) {
-      throw new BadRequestError("Missing required fields: username, password, email, and name are required");
+      throw new BadRequestError(
+        "Missing required fields: username, password, email, and name are required"
+      );
     }
 
     // Validate password match
@@ -167,14 +169,18 @@ class UserController {
     }
 
     // Create new auth account with default role
-    const role_id = '6800d06932b289b2fe5b0403'; // Default role ID
-    const newAuth = await AuthService.createAccount(username, password, role_id);
+    const role_id = "6800d06932b289b2fe5b0403"; // Default role ID
+    const newAuth = await AuthService.createAccount(
+      username,
+      password,
+      role_id
+    );
 
     // Create new user with the auth account
     const newUser = await UserService.createNewStaff({
       name,
       email,
-      authId: newAuth._id
+      authId: newAuth._id,
     });
 
     // Send account details to user's email
@@ -204,7 +210,12 @@ class UserController {
     if (!isMatch) throw new Error("Wrong password");
 
     const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role, username: user.username },
+      {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        username: user.username,
+      },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
@@ -252,14 +263,16 @@ class UserController {
     });
   }
   async getUserUpdate(req, res) {
-    const userID = req.params.id;
+    console.log("getUserUpdate", req.body);
+
+    const userID = req.body._id;
+    console.log("userID", userID);
+
     const user = await UserService.findById(userID);
     if (!user) throw new NotFoundError("User not found");
-    const currentUserId = req.user.id;
-    if (currentUserId !== user.authId.toString()) {
-      throw new ForbiddenError("You do not have permission to access this id");
-    }
+
     const data = req.body;
+    console.log("data", data);
 
     const updatedUser = await UserService.updateUserById(userID, data);
     return res.status(200).json({

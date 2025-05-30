@@ -7,10 +7,12 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const checkPermission = require("../middlewares/checkPermission");
 const { asyncHandle } = require("../utils/asyncHandle");
 //GET
-router.get("/", 
+router.get(
+  "/",
   authMiddleware,
   checkPermission("create_user"),
-  asyncHandle(userController.getAllUsers));
+  asyncHandle(userController.getAllUsers)
+);
 router.get("/staff", asyncHandle(userController.getUsersAreStaff));
 
 // router.get('/', userController.getAllUsers);
@@ -22,7 +24,7 @@ router.post(
   asyncHandle(userController.createStaff)
 );
 // router.get("/register", authMiddleware, userController.getUsertoCreateAccount);
-router.post("/register", (userController.registerAccount));
+router.post("/register", userController.registerAccount);
 router.post("/login", asyncHandle(userController.loginAccount));
 router.post(
   "/logout",
@@ -80,15 +82,15 @@ router.get("/teachers/:id", asyncHandle(teacherController.getTeacherById));
 router.put("/teachers/:id", asyncHandle(teacherController.updateTeacherById));
 
 router.get(
-  "/teachers/certificate/:id",
+  "/certificate/:id",
   asyncHandle(certificateController.getTeacherCertificate)
 );
 router.post(
-  "/teachers/certificate/:id",
+  "/certificate/:id",
   asyncHandle(certificateController.createCertificate)
 );
 router.put(
-  "/teachers/certificate/:id",
+  "/certificate/:id",
   asyncHandle(certificateController.updateCertificate)
 );
 module.exports = router;
