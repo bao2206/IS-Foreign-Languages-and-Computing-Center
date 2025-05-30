@@ -22,22 +22,22 @@ app.get("/", (req, res) => {
 // );
 // Import database connection
 const { connectDB } = require("./src/config/database");
-const createAdmin = async () => {
-  const admin = await AccountService.FindUserByRoleAdmin({ role: "admin" });
-  console.log("TEST", admin);
-  if (admin) {
-    console.log("Admin already exists");
-    return;
-  }
-  const newAdmin = new AuthModel({
-    username: process.env.ADMIN_NAME,
-    email: process.env.ADMIN_EMAIL,
-    password: process.env.ADMIN_PASSWORD,
-    role: "admin",
-  });
-  await newAdmin.save();
-  console.log("Admin created successfully");
-};
+// const createAdmin = async () => {
+//   const admin = await AccountService.FindUserByRoleAdmin({ role: "admin" });
+//   console.log("TEST", admin);
+//   if (admin) {
+//     console.log("Admin already exists");
+//     return;
+//   }
+//   const newAdmin = new AuthModel({
+//     username: process.env.ADMIN_NAME,
+//     email: process.env.ADMIN_EMAIL,
+//     password: process.env.ADMIN_PASSWORD,
+//     role: "admin",
+//   });
+//   await newAdmin.save();
+//   console.log("Admin created successfully");
+// };
 
 (async () => {
   await connectDB();

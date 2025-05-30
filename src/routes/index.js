@@ -13,6 +13,7 @@ router.use("/schedules", require("./scheduleRoute"));
 router.use("/exams", require("./examRoute"));
 router.use("/discount", require("./discountRoute"));
 router.use("/payment", require("./paymentRoute"));
-
+router.use("/contact", require("./contactRoute"));
 router.use("/upload", require("./uploadRoute"));
+router.use("/role", require("./RoleRoute"));
 module.exports = router;

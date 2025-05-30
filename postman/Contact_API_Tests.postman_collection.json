@@ -1,0 +1,230 @@
+{
+	"info": {
+		"_postman_id": "contact-api-tests",
+		"name": "Contact API Tests",
+		"description": "Collection for testing Contact API endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Public Consultation",
+			"item": [
+				{
+					"name": "Create Public Consultation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"phone\": \"0987654321\",\n    \"email\": \"test@example.com\",\n    \"courseInterest\": \"English Course\",\n    \"consultationContent\": \"I would like to know more about the English course schedule and pricing.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/contact/public",
+							"host": ["{{base_url}}"],
+							"path": ["contact", "public"]
+						}
+					},
+					"test": [
+						"pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});",
+						"pm.test(\"Response has success flag\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData.success).to.be.true;\n});",
+						"pm.test(\"Response contains contact data\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData.data).to.have.property('name');\n    pm.expect(jsonData.data).to.have.property('email');\n    pm.expect(jsonData.data).to.have.property('status', 'pending');\n});"
+					]
+				}
+			]
+		},
+		{
+			"name": "Admin Consultation",
+			"item": [
+				{
+					"name": "Create Admin Consultation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Admin Test User\",\n    \"phone\": \"0987654321\",\n    \"email\": \"admin_test@example.com\",\n    \"courseInterest\": \"Advanced English\",\n    \"consultationContent\": \"Admin created consultation request\",\n    \"status\": \"pending\",\n    \"notes\": \"Initial consultation notes\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/contact/admin",
+							"host": ["{{base_url}}"],
+							"path": ["contact", "admin"]
+						}
+					},
+					"test": [
+						"pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});",
+						"pm.test(\"Response has success flag\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData.success).to.be.true;\n});",
+						"pm.test(\"Response contains contact data with admin fields\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData.data).to.have.property('processedBy');\n    pm.expect(jsonData.data).to.have.property('notes');\n});"
+					]
+				},
+				{
+					"name": "Get All Consultations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/contact?status=pending&page=1&limit=10&sort=createdAt:desc",
+							"host": ["{{base_url}}"],
+							"path": ["contact"],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "sort",
+									"value": "createdAt:desc"
+								}
+							]
+						}
+					},
+					"test": [
+						"pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});",
+						"pm.test(\"Response has pagination data\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData.pagination).to.have.property('total');\n    pm.expect(jsonData.pagination).to.have.property('page');\n    pm.expect(jsonData.pagination).to.have.property('pages');\n});",
+						"pm.test(\"Response contains consultations array\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData.data).to.be.an('array');\n});"
+					]
+				},
+				{
+					"name": "Get Single Consultation",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/contact/{{consultation_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["contact", "{{consultation_id}}"]
+						}
+					},
+					"test": [
+						"pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});",
+						"pm.test(\"Response contains consultation details\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData.data).to.have.property('_id');\n    pm.expect(jsonData.data).to.have.property('name');\n    pm.expect(jsonData.data).to.have.property('email');\n});"
+					]
+				},
+				{
+					"name": "Update Consultation",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Name\",\n    \"notes\": \"Updated consultation notes\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/contact/{{consultation_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["contact", "{{consultation_id}}"]
+						}
+					},
+					"test": [
+						"pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});",
+						"pm.test(\"Response contains updated data\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData.data.name).to.equal(\"Updated Name\");\n    pm.expect(jsonData.data.notes).to.equal(\"Updated consultation notes\");\n});"
+					]
+				},
+				{
+					"name": "Update Consultation Status",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"processed\",\n    \"notes\": \"Consultation has been processed\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/contact/{{consultation_id}}/status",
+							"host": ["{{base_url}}"],
+							"path": ["contact", "{{consultation_id}}", "status"]
+						}
+					},
+					"test": [
+						"pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});",
+						"pm.test(\"Response contains updated status\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData.data.status).to.equal(\"processed\");\n    pm.expect(jsonData.data).to.have.property('processedAt');\n    pm.expect(jsonData.data).to.have.property('processedBy');\n});"
+					]
+				},
+				{
+					"name": "Delete Consultation",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/contact/{{consultation_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["contact", "{{consultation_id}}"]
+						}
+					},
+					"test": [
+						"pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});",
+						"pm.test(\"Response indicates successful deletion\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData.success).to.be.true;\n    pm.expect(jsonData.data).to.be.an('object');\n});"
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000/api"
+		},
+		{
+			"key": "admin_token",
+			"value": "your_admin_jwt_token_here"
+		},
+		{
+			"key": "consultation_id",
+			"value": "consultation_id_to_test"
+		}
+	]
+} 

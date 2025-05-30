@@ -97,6 +97,12 @@ class UserService {
   async checkEmail(email) {
     return await userModel.findOne({ email });
   }
+  async checkPhone(phone) {
+    return await userModel.findOne({ phone });
+  }
+  async findByName(name) {
+    return await userModel.findOne({ name });
+  }
 
   async findByAuthId(authId) {
     return await userModel.findOne({ authId });

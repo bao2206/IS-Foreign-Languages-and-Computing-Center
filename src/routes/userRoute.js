@@ -8,8 +8,8 @@ const checkPermission = require("../middlewares/checkPermission");
 const { asyncHandle } = require("../utils/asyncHandle");
 //GET
 router.get("/", 
-  // authMiddleware,
-  // checkPermission("create_user"),
+  authMiddleware,
+  checkPermission("create_user"),
   asyncHandle(userController.getAllUsers));
 router.get("/staff", asyncHandle(userController.getUsersAreStaff));
 
@@ -21,8 +21,8 @@ router.post(
   checkPermission("create_user"),
   asyncHandle(userController.createStaff)
 );
-router.get("/register", authMiddleware, userController.getUsertoCreateAccount);
-router.post("/register/:id", userController.registerAccount);
+// router.get("/register", authMiddleware, userController.getUsertoCreateAccount);
+router.post("/register", (userController.registerAccount));
 router.post("/login", asyncHandle(userController.loginAccount));
 router.post(
   "/logout",

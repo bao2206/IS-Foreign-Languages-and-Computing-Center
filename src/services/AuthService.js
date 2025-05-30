@@ -13,12 +13,20 @@ class AuthService {
     async findByUsername(username){
         return await AuthModel.findOne({username});
     }
+    // async findByEmail(email){
+    //     return await AuthModel.findOne({email});
+    // }
     async findByResetToken(token){
         return await AuthModel.findOne({
             resetPasswordToken: token,
             resetPasswordExpires : { $gt: Date.now() }
         }, {new: true});
     }
+
+    // async findByPhone(phone){
+    //     return await AuthModel.findOne({phone});
+    // }
+
 }
 
 module.exports = new AuthService();
