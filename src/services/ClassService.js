@@ -144,7 +144,8 @@ class ClassService {
   async configUpdateClass(config) {
     switch (config.action) {
       case "updateClass":
-        return await this.updateClass(config.classId, config.classData);
+        return await this.updateClass(config.classId, config.data);
+
       case "addTeacher":
         return await this.addTeacherToClass(config.classId, config.teacherId);
       case "addStudent":
@@ -156,7 +157,10 @@ class ClassService {
     return await ClassModel.findByIdAndUpdate(classId, classData, {
       new: true,
       runValidators: true,
-    });
+    })
+      .populate("courseId")
+      .populate({ path: "students", model: "User" })
+      .populate({ path: "teachers", model: "User" });
   }
 
   async addTeacherToClass(classId, teacherId) {

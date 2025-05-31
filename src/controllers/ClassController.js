@@ -74,11 +74,12 @@ class ClassController {
 
   async updateClass(req, res) {
     try {
-      const config = req.body.config;
-      const classData = await ClassService.configUpdateClass(config);
+      const query = req.body;
+      const classData = await ClassService.configUpdateClass(query);
       if (!classData) {
         return res.status(404).json({ message: "Class not found" });
       }
+
       return res.status(200).json(classData);
     } catch (error) {
       throw new ErrorCustom(error.message, 500);
