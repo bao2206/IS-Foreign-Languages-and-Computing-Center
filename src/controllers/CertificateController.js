@@ -4,8 +4,6 @@ const { ErrorCustom } = require("../core/errorCustom");
 
 class CertificateController {
   async updateTeacherById(req, res) {
-    console.log("update teacher");
-
     const teacherID = req.params.id;
     const data = req.body;
 
@@ -27,7 +25,7 @@ class CertificateController {
   }
 
   async getTeacherCertificate(req, res) {
-    const teacherID = req.params.id;
+    const teacherID = req.query.id;
 
     const certificates = await TeacherService.getCertificatesByTeacherId(
       teacherID
@@ -45,9 +43,7 @@ class CertificateController {
   }
 
   async createCertificate(req, res) {
-    console.log("create certificate");
-
-    const teacherID = req.params.id;
+    const teacherID = req.query.id;
     const data = req.body;
 
     const certificate = await TeacherService.createCertificate(teacherID, data);
@@ -58,11 +54,9 @@ class CertificateController {
   }
 
   async updateCertificate(req, res) {
-    const teacherID = req.params.id;
     const data = req.body;
 
     const certificateID = req.body._id;
-    console.log("certificateID: ", certificateID);
 
     const certificate = await TeacherService.getCertificateById(certificateID);
     if (!certificate) {
@@ -74,6 +68,27 @@ class CertificateController {
       certificateID,
       data
     );
+
+    return res.status(200).json({
+      message: "Certificate updated successfully",
+      data: updatedCertificate,
+    });
+  }
+
+  async deleteCertificate(req, res) {
+    const certificateID = req.query.id;
+
+    const certificate = await TeacherService.getCertificateById(certificateID);
+    if (!certificate) {
+      return res.status(404).json({
+        message: "Certificate not found",
+      });
+    }
+
+    await TeacherService.deleteCertificate(certificateID);
+    return res.status(200).json({
+      message: "Certificate deleted successfully",
+    });
   }
 }
 

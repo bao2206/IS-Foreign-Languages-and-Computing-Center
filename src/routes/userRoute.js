@@ -82,15 +82,19 @@ router.get("/teachers/:id", asyncHandle(teacherController.getTeacherById));
 router.put("/teachers/:id", asyncHandle(teacherController.updateTeacherById));
 
 router.get(
-  "/certificate/:id",
+  "/certificate/",
   asyncHandle(certificateController.getTeacherCertificate)
 );
 router.post(
-  "/certificate/:id",
+  "/certificate/",
   asyncHandle(certificateController.createCertificate)
 );
 router.put(
-  "/certificate/:id",
+  "/certificate/",
   asyncHandle(certificateController.updateCertificate)
+);
+router.delete(
+  "/certificate/",
+  asyncHandle(certificateController.deleteCertificate)
 );
 module.exports = router;
