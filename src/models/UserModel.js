@@ -29,19 +29,19 @@ const UserSchema = new Schema({
     },
     email:{
         type: String,  
-        required: [true, "Please provide a email"],
-        unique: true,
-        trim: [true, "Email must not contain leading or trailing spaces"],
-        validate:{
-            validator:(v) => emailRegex.test(v),
-            message:"Email is invalid"
-        }
+        // required: [true, "Please provide a email"],
+        // unique: true,
+        // trim: [true, "Email must not contain leading or trailing spaces"],
+        // validate:{
+        //     validator:(v) => emailRegex.test(v),
+        //     message:"Email is invalid"
+        // }
     },
     citizenID: {
         type: String,
         // required: [true, "Please provide a citizen ID"],
-        unique: [true, "Please provide a unique citizen ID"],
-        trim: [true, "Citizen ID must not contain leading or trailing spaces"],
+        // unique: [true, "Please provide a unique citizen ID"],
+        // trim: [true, "Citizen ID must not contain leading or trailing spaces"],
         // validate: {
         //   validator: (v) => /^\d{12}$/.test(v),
         //   message: "Citizen ID must be exactly 12 digits"
@@ -49,11 +49,11 @@ const UserSchema = new Schema({
       },
     phone:{
         type: String,
-        unique:[true, "Phone is already exist"],
-        validate:{
-            validator:(v) => phoneRegex.test(v),
-            message:"Phone is invalid. Please enter a valid phone number"
-        }
+        // unique:[true, "Phone is already exist"],
+        // validate:{
+        //     validator:(v) => phoneRegex.test(v),
+        //     message:"Phone is invalid. Please enter a valid phone number"
+        // }
     },
     address: {
         street: {type: String, 
