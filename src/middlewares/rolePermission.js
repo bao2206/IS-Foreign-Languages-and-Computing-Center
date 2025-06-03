@@ -24,6 +24,12 @@ const rolePermissions = {
     academic_finance_staff: [
       permissions.VIEW_FINANCIAL_REPORT,
       permissions.MANAGE_CLASSES
+    ],
+    finance: [
+      permissions.VIEW_FINANCIAL_REPORT,
+      permissions.MANAGE_PAYMENTS,
+      permissions.VIEW_PAYMENT_HISTORY,
+      permissions.MANAGE_DISCOUNTS
     ]
   };
 module.exports = rolePermissions;

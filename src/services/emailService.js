@@ -71,10 +71,23 @@ const sendResetPasswordEmail = async (email, token) => {
   `;
   await sendMail(email, '🔑 Đặt lại mật khẩu', html);
 };
+const sendMailThankYouContact = async (email, name) => {
+  const html = `
+    <p>Chào <strong>${name}</strong>,</p>
+    <p>Cảm ơn bạn đã liên hệ với Trung tâm Ngoại ngữ - Tin học của chúng tôi.</p>
+    <p>Chúng tôi đã nhận được thông tin của bạn và sẽ phản hồi trong thời gian sớm nhất.</p>
+    <p>Nếu có vấn đề khẩn cấp, vui lòng liên hệ trực tiếp qua số điện thoại hoặc fanpage của trung tâm.</p>
+    <br/>
+    <p>Trân trọng,</p>
+    <p><strong>Trung tâm Ngoại ngữ - Tin học</strong></p>
+  `;
+  await sendMail(email, 'Cảm ơn bạn đã liên hệ với Trung tâm', html);
+};
 
 module.exports = {
   sendEmailService,
   sendAccount,
   sendResetPasswordEmail,
   generateToken,
+  sendMailThankYouContact,
 };

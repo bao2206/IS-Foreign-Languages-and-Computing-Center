@@ -19,6 +19,8 @@ const {
   NotFoundError,
   ForbiddenError,
 } = require("../core/errorCustom");
+const { validateFields } = require("../utils/validators");
+
 class UserController {
   async getAllUsers(req, res) {
     const { role, page = 1, limit = 10, search, status, sex } = req.query;
@@ -88,16 +90,29 @@ class UserController {
     });
   }
   async createStaff(req, res) {
-    // console.log("create Staff");
-    // console.log(req.body);
+    const { name, role, email, phone, citizenId } = req.body;
 
-    const { name, role, email } = req.body;
-
+    // Validate fields if provided
+    const validation = validateFields({ phone, email, citizenId });
+    if (!validation.isValid) {
+      throw new BadRequestError(validation.errors);
+    }
+    const checkEmail = await UserService.checkEmail(email);
+    if(checkEmail){
+      throw new BadRequestError("Email already exists");
+    }
+    const checkPhone = await UserService.checkPhone(phone);
+    if(checkPhone){
+      throw new BadRequestError("Phone already exists");
+    }
+    const checkCitizenId = await UserService.checkCitizenId(citizenId);
+    if(checkCitizenId){
+      throw new BadRequestError("Citizen ID already exists");
+    }
     const newStaff = await UserService.createNewStaff(req.body);
     const username = generateUsername(email);
     const password = generatePassword(8);
     const role_id = await RoleService.findRole(role);
-    // console.log(username, password, role_id);
 
     const newAuth = await AuthService.createAccount(
       username,
@@ -142,7 +157,7 @@ class UserController {
   // }
   //client
   async registerAccount(req, res) {
-    const { username, name, email, password, confirmPassword } = req.body;
+    const { username, name, email, password, confirmPassword, phone, citizenId } = req.body;
 
     // Validate required fields
     if (!username || !password || !email || !name) {
@@ -151,6 +166,23 @@ class UserController {
       );
     }
 
+    // Validate optional fields if provided
+    const validation = validateFields({ phone, email, citizenId });
+    if (!validation.isValid) {
+      throw new BadRequestError(validation.errors);
+    }
+    const checkEmail = await UserService.checkEmail(email);
+    if(checkEmail){
+      throw new BadRequestError("Email already exists");
+    }
+    const checkPhone = await UserService.checkPhone(phone);
+    if(checkPhone){
+      throw new BadRequestError("Phone already exists");
+    }
+    const checkCitizenId = await UserService.checkCitizenId(citizenId);
+    if(checkCitizenId){
+      throw new BadRequestError("Citizen ID already exists");
+    }
     // Validate password match
     if (password !== confirmPassword) {
       throw new BadRequestError("Password and confirm password do not match");
@@ -180,6 +212,8 @@ class UserController {
     const newUser = await UserService.createNewStaff({
       name,
       email,
+      phone,
+      citizenId,
       authId: newAuth._id,
     });
 
@@ -192,6 +226,8 @@ class UserController {
         id: newUser._id,
         username: newUser.username,
         email: newUser.email,
+        phone: newUser.phone,
+        citizenId: newUser.citizenId,
         authId: newUser.authId,
       },
       success: true,
@@ -263,18 +299,19 @@ class UserController {
     });
   }
   async getUserUpdate(req, res) {
-    console.log("getUserUpdate", req.body);
-
     const userID = req.body._id;
-    console.log("userID", userID);
-
     const user = await UserService.findById(userID);
     if (!user) throw new NotFoundError("User not found");
 
-    const data = req.body;
-    console.log("data", data);
+    const { phone, email, citizenId } = req.body;
+    
+    // Validate fields if provided
+    const validation = validateFields({ phone, email, citizenId });
+    if (!validation.isValid) {
+      throw new BadRequestError(validation.errors);
+    }
 
-    const updatedUser = await UserService.updateUserById(userID, data);
+    const updatedUser = await UserService.updateUserById(userID, req.body);
     return res.status(200).json({
       message: "User updated successfully",
       data: updatedUser,
@@ -416,6 +453,21 @@ class UserController {
 
     res.status(200).json({
       data: users,
+    });
+  }
+
+  async validateUserFields(req, res) {
+    const { phone, email, citizenId } = req.body;
+    
+    const validation = validateFields({ phone, email, citizenId });
+    
+    if (!validation.isValid) {
+      throw new BadRequestError(validation.errors);
+    }
+    
+    return res.status(200).json({
+      message: "Fields are valid",
+      data: { phone, email, citizenId }
     });
   }
 }

@@ -13,7 +13,7 @@ const StudentSchema = new Schema({
         type: Schema.Types.ObjectId, ref: 'Class', required: true
     },
     points: [{
-        type: Schema.Types.ObjectId, ref: 'Point', requuired: true
+        type: Schema.Types.ObjectId, ref: 'Point', required: true
     }],
     attendance:[{
         type: Schema.Types.ObjectId, ref: 'Attendance', required: true

@@ -12,7 +12,8 @@ router.post('/public', asyncHandle(ContactController.createPublicConsultation));
 // router.use(authorizeRoles('admin', 'staff'));
 
 router.post('/admin', getUsernameFromLocalStorage, asyncHandle(ContactController.createAdminConsultation));
-router.get('/', asyncHandle(ContactController.getAllConsultations));
+// router.get('/', asyncHandle(ContactController.getAllConsultations));
+router.get('/', ContactController.getAllConsultations)
 router.get('/:id', asyncHandle(ContactController.getConsultation));
 router.patch('/:id', asyncHandle(ContactController.updateConsultation));
 router.patch('/:id/status', asyncHandle(ContactController.updateStatus));

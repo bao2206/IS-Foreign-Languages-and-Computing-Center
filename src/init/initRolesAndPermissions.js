@@ -21,7 +21,7 @@ async function init() {
 
   const allPermissions = await Permission.find();
 
-  const roles = ["student", "parent", "teacher", "admin", "consultant", "academic"];
+  const roles = ["student", "parent", "teacher", "admin", "consultant", "academic", "finance"];
   
   for (const roleName of roles) {
     const exists = await Role.findOne({ name: roleName });

@@ -1,22 +1,17 @@
 const Contact = require('../models/ContactModel');
 const UserService = require('../services/userService');
 // const { StatusCodes } = require('http-status-codes');
+const { sendMailThankYouContact } = require('../services/emailService');
 const { BadRequestError, NotFoundError } = require('../core/errorCustom');
-
+const {validateFields} = require('../utils/validators');
 class ContactController {
     // Create a new consultation request (public form)
     async createPublicConsultation(req, res) {
-        const { name, phone, email, courseInterest, consultationContent } = req.body;
-        // const [phoneExist , emailExist]= await Promise.all([
-        //     AuthService.findByPhone(phone),
-        //     AuthService.findByEmail(email)
-        // ]);
-        console.log(phone)
-        console.log(email)
+        // console.log(req.body)
+        const { name, phone, email, consultationContent } = req.body;
         const phoneExist = await UserService.checkPhone(phone);
         const emailExist = await UserService.checkEmail(email);
-        console.log(phoneExist)
-        console.log(emailExist)
+        
         if (phoneExist) {
             throw new BadRequestError('Phone number already exists');
         }
@@ -29,20 +24,21 @@ class ContactController {
             name,
             phone,
             email,
-            courseInterest,
             consultationContent,
             status: 'pending'
         });
-
+        await sendMailThankYouContact(email, name);
         res.status(201).json({
             success: true,
             data: contact
         });
     }
 
-    // Create a new consultation request (admin panel)
+
     async createAdminConsultation(req, res) {
-        const { name, phone, email, courseInterest, consultationContent, status, notes } = req.body;
+        // console.log(req.body)
+        let isParent = false;
+        const { name, phone, email, consultationContent, status, notes, parent } = req.body;
         
         if (!req.username) {
             return res.status(401).json({
@@ -51,12 +47,10 @@ class ContactController {
             });
         }
 
-        // Check if phone or email already exists
-        const [phoneExist , emailExist]= await Promise.all([
-            UserService.checkPhone(phone),
-            UserService.checkEmail(email)
-        ]);
-        // console.log(emailExist)
+
+        const phoneExist = await UserService.checkPhone(phone);
+        const emailExist = await UserService.checkEmail(email);
+        
         if (phoneExist) {
             throw new BadRequestError('Phone number already exists');
         }
@@ -64,12 +58,13 @@ class ContactController {
         if (emailExist) {
             throw new BadRequestError('Email already exists');
         }
+        if(isParent){
 
+        }
         const contact = await Contact.create({
             name,
             phone,
             email,
-            courseInterest,
             consultationContent,
             status: status || 'pending',
             notes,
@@ -127,7 +122,7 @@ class ContactController {
 
         const total = await Contact.countDocuments(queryObject);
 
-        res.status(StatusCodes.OK).json({
+        res.status(200).json({
             success: true,
             data: consultations,
             pagination: {
@@ -150,7 +145,7 @@ class ContactController {
             throw new NotFoundError(`No consultation found with id ${id}`);
         }
 
-        res.status(StatusCodes.OK).json({
+        res.status(201).json({
             success: true,
             data: consultation
         });
@@ -159,7 +154,7 @@ class ContactController {
     // Update consultation
     async updateConsultation(req, res) {
         const { id } = req.params;
-        const { name, phone, email, courseInterest, consultationContent, notes } = req.body;
+        const { name, phone, email, courseInterest, consultationContent, notes, status } = req.body;
 
         const consultation = await Contact.findById(id);
 
@@ -174,10 +169,11 @@ class ContactController {
         consultation.courseInterest = courseInterest || consultation.courseInterest;
         consultation.consultationContent = consultationContent || consultation.consultationContent;
         consultation.notes = notes || consultation.notes;
+        consultation.status = status || consultation.status;
 
         await consultation.save();
 
-        res.status(StatusCodes.OK).json({
+        res.status(201).json({
             success: true,
             data: consultation
         });
@@ -209,7 +205,7 @@ class ContactController {
 
         await consultation.save();
 
-        res.status(StatusCodes.OK).json({
+        res.status(201).json({
             success: true,
             data: consultation
         });
@@ -227,7 +223,7 @@ class ContactController {
 
         await consultation.deleteOne();
 
-        res.status(StatusCodes.OK).json({
+        res.status(201).json({
             success: true,
             data: {}
         });

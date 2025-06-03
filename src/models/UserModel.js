@@ -39,13 +39,13 @@ const UserSchema = new Schema({
     },
     citizenID: {
         type: String,
-        required: [true, "Please provide a citizen ID"],
+        // required: [true, "Please provide a citizen ID"],
         unique: [true, "Please provide a unique citizen ID"],
         trim: [true, "Citizen ID must not contain leading or trailing spaces"],
-        validate: {
-          validator: (v) => /^\d{12}$/.test(v),
-          message: "Citizen ID must be exactly 12 digits"
-        }
+        // validate: {
+        //   validator: (v) => /^\d{12}$/.test(v),
+        //   message: "Citizen ID must be exactly 12 digits"
+        // }
       },
     phone:{
         type: String,

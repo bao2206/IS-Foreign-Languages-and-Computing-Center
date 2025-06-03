@@ -24,7 +24,7 @@ const ParentSchema = new Schema({
         },
         address: {
             type: String,
-            required: true
+            // required: true
         }
     },
     paymentHistory: [{

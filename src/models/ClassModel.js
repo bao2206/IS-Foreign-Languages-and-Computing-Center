@@ -34,6 +34,7 @@ const ClassSchema = new Schema({
         type: Date,
         default: Date.now,
     },
+    attendance: [{ type: Schema.Types.ObjectId, ref: "Attendance" }],
   });
   
 module.exports = mongoose.model("Class", ClassSchema);

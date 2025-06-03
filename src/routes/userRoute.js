@@ -97,4 +97,11 @@ router.delete(
   "/certificate/",
   asyncHandle(certificateController.deleteCertificate)
 );
+
+// Validate user fields
+router.post(
+  "/validate-fields",
+  asyncHandle(userController.validateUserFields)
+);
+
 module.exports = router;
