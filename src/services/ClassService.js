@@ -19,8 +19,6 @@ class ClassService {
   }
   // Class CRUD operations
   async getClassesInformation(config) {
-    console.log("Backend config:", config); // Debug
-
     if (!config) {
       throw new Error("Config is required");
     }
@@ -56,8 +54,6 @@ class ClassService {
         $lte: new Date(filters.endDate),
       };
     }
-
-    console.log("Backend filters:", queryFilters); // Debug
 
     // Xử lý action
     switch (config.action) {
@@ -116,13 +112,6 @@ class ClassService {
 
       // Thực thi query
       const classData = await query.exec();
-
-      console.log("Backend response:", {
-        data: classData,
-        total,
-        currentPage: page,
-        totalPages,
-      });
 
       return {
         data: classData,
@@ -244,7 +233,6 @@ class ClassService {
       action: "getByClassId",
       classId: classId,
     });
-    console.log();
 
     if (schedules.length > 0) {
       const schedulesDel = await ShedulesService.deleteSchedule({
