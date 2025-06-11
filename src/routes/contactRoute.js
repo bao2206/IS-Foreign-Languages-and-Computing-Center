@@ -5,7 +5,7 @@ const {asyncHandle} = require('../utils/asyncHandle');
 const getUsernameFromLocalStorage = require('../middlewares/getUsernameFromLocalStorage');
 
 // Public routes
-router.post('/public', asyncHandle(ContactController.createPublicConsultation));
+router.post('/public', ContactController.createPublicConsultation);
 
 // Admin routes
 // //router.use(authenticateUser);

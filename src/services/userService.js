@@ -6,41 +6,41 @@ const { NotFoundError } = require("../core/errorCustom");
 class UserService {
   async findItems(searchOptions = {}) {
     const {
-      search = '',
+      search = "",
       role,
       status,
       sex,
       page = 1,
       limit = 10,
-      sortBy = 'createdAt',
-      sortOrder = 'desc'
+      sortBy = "createdAt",
+      sortOrder = "desc",
     } = searchOptions;
 
     // Build query
     const query = {};
-    
+
     // Text search across multiple fields with case-insensitive matching
-    if (search && search.trim() !== '') {
-      const searchRegex = new RegExp(search.trim(), 'i');
+    if (search && search.trim() !== "") {
+      const searchRegex = new RegExp(search.trim(), "i");
       query.$or = [
         { name: searchRegex },
         { email: searchRegex },
         { phone: searchRegex },
-        { citizenID: searchRegex }
+        { citizenID: searchRegex },
       ];
     }
 
     // Add filters only if they are defined and not empty
-    if (status && status.trim() !== '') query.status = status;
-    if (sex && sex.trim() !== '') query.sex = sex;
+    if (status && status.trim() !== "") query.status = status;
+    if (sex && sex.trim() !== "") query.sex = sex;
 
     // Role filter requires finding the role ID first
-    if (role && role.trim() !== '') {
+    if (role && role.trim() !== "") {
       const roleDoc = await roleModel.findOne({ name: role.toLowerCase() });
       if (roleDoc) {
-        const auths = await authModel.find({ role: roleDoc._id }).select('_id');
+        const auths = await authModel.find({ role: roleDoc._id }).select("_id");
         if (auths.length > 0) {
-          const authIds = auths.map(auth => auth._id);
+          const authIds = auths.map((auth) => auth._id);
           query.authId = { $in: authIds };
         }
       }
@@ -51,18 +51,18 @@ class UserService {
 
     // Build sort object
     const sort = {};
-    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    sort[sortBy] = sortOrder === "desc" ? -1 : 1;
 
     // Execute query with pagination and populate
     const users = await userModel
       .find(query)
       .populate({
-        path: 'authId',
-        select: 'username role',
+        path: "authId",
+        select: "username role",
         populate: {
-          path: 'role',
-          select: 'name'
-        }
+          path: "role",
+          select: "name",
+        },
       })
       .sort(sort)
       .skip(skip)
@@ -75,7 +75,7 @@ class UserService {
       data: users,
       total,
       currentPage: parseInt(page),
-      totalPages: Math.ceil(total / limit)
+      totalPages: Math.ceil(total / limit),
     };
   }
 
@@ -94,11 +94,12 @@ class UserService {
       .limit(parsedLimit);
   }
 
-  async checkEmail(email) {
-    return await userModel.findOne({ email });
-  }
   async checkPhone(phone) {
-    return await userModel.findOne({ phone });
+    return !!(await userModel.findOne({ phone }));
+  }
+
+  async checkEmail(email) {
+    return !!(await userModel.findOne({ email }));
   }
   async findByName(name) {
     return await userModel.findOne({ name });
@@ -132,14 +133,7 @@ class UserService {
     const user = await userModel.findById(userID);
     if (!user) throw new NotFoundError("User not found");
 
-    const {
-      name,
-      email,
-      citizenID,
-      phone,
-      avatar,
-      address,
-    } = data;
+    const { name, email, citizenID, phone, avatar, address } = data;
 
     Object.assign(user, {
       ...(name !== undefined && { name }),

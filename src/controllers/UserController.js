@@ -156,83 +156,83 @@ class UserController {
   //   }
   // }
   //client
-  async registerAccount(req, res) {
-    const { username, name, email, password, confirmPassword, phone, citizenId } = req.body;
+  // async registerAccount(req, res) {
+  //   const { username, name, email, password, confirmPassword, phone, citizenId } = req.body;
 
-    // Validate required fields
-    if (!username || !password || !email || !name) {
-      throw new BadRequestError(
-        "Missing required fields: username, password, email, and name are required"
-      );
-    }
+  //   // Validate required fields
+  //   if (!username || !password || !email || !name) {
+  //     throw new BadRequestError(
+  //       "Missing required fields: username, password, email, and name are required"
+  //     );
+  //   }
 
-    // Validate optional fields if provided
-    const validation = validateFields({ phone, email, citizenId });
-    if (!validation.isValid) {
-      throw new BadRequestError(validation.errors);
-    }
-    const checkEmail = await UserService.checkEmail(email);
-    if(checkEmail){
-      throw new BadRequestError("Email already exists");
-    }
-    const checkPhone = await UserService.checkPhone(phone);
-    if(checkPhone){
-      throw new BadRequestError("Phone already exists");
-    }
-    const checkCitizenId = await UserService.checkCitizenId(citizenId);
-    if(checkCitizenId){
-      throw new BadRequestError("Citizen ID already exists");
-    }
-    // Validate password match
-    if (password !== confirmPassword) {
-      throw new BadRequestError("Password and confirm password do not match");
-    }
+  //   // Validate optional fields if provided
+  //   const validation = validateFields({ phone, email, citizenId });
+  //   if (!validation.isValid) {
+  //     throw new BadRequestError(validation.errors);
+  //   }
+  //   const checkEmail = await UserService.checkEmail(email);
+  //   if(checkEmail){
+  //     throw new BadRequestError("Email already exists");
+  //   }
+  //   const checkPhone = await UserService.checkPhone(phone);
+  //   if(checkPhone){
+  //     throw new BadRequestError("Phone already exists");
+  //   }
+  //   const checkCitizenId = await UserService.checkCitizenId(citizenId);
+  //   if(checkCitizenId){
+  //     throw new BadRequestError("Citizen ID already exists");
+  //   }
+  //   // Validate password match
+  //   if (password !== confirmPassword) {
+  //     throw new BadRequestError("Password and confirm password do not match");
+  //   }
 
-    // Check if username already exists
-    const usernameExist = await AuthService.findByUsername(username);
-    if (usernameExist) {
-      throw new BadRequestError("Username already exists");
-    }
+  //   // Check if username already exists
+  //   const usernameExist = await AuthService.findByUsername(username);
+  //   if (usernameExist) {
+  //     throw new BadRequestError("Username already exists");
+  //   }
 
-    // Check if email already exists
-    const emailExist = await UserService.checkEmail(email);
-    if (emailExist) {
-      throw new BadRequestError("Email already exists");
-    }
+  //   // Check if email already exists
+  //   const emailExist = await UserService.checkEmail(email);
+  //   if (emailExist) {
+  //     throw new BadRequestError("Email already exists");
+  //   }
 
-    // Create new auth account with default role
-    const role_id = "6800d06932b289b2fe5b0403"; // Default role ID
-    const newAuth = await AuthService.createAccount(
-      username,
-      password,
-      role_id
-    );
+  //   // Create new auth account with default role
+  //   const role_id = "6800d06932b289b2fe5b0403"; // Default role ID
+  //   const newAuth = await AuthService.createAccount(
+  //     username,
+  //     password,
+  //     role_id
+  //   );
 
-    // Create new user with the auth account
-    const newUser = await UserService.createNewStaff({
-      name,
-      email,
-      phone,
-      citizenId,
-      authId: newAuth._id,
-    });
+  //   // Create new user with the auth account
+  //   const newUser = await UserService.createNewStaff({
+  //     name,
+  //     email,
+  //     phone,
+  //     citizenId,
+  //     authId: newAuth._id,
+  //   });
 
-    // Send account details to user's email
-    await sendAccount(name, email, username, password);
+  //   // Send account details to user's email
+  //   await sendAccount(name, email, username, password);
 
-    return res.status(201).json({
-      message: "Account registered successfully",
-      user: {
-        id: newUser._id,
-        username: newUser.username,
-        email: newUser.email,
-        phone: newUser.phone,
-        citizenId: newUser.citizenId,
-        authId: newUser.authId,
-      },
-      success: true,
-    });
-  }
+  //   return res.status(201).json({
+  //     message: "Account registered successfully",
+  //     user: {
+  //       id: newUser._id,
+  //       username: newUser.username,
+  //       email: newUser.email,
+  //       phone: newUser.phone,
+  //       citizenId: newUser.citizenId,
+  //       authId: newUser.authId,
+  //     },
+  //     success: true,
+  //   });
+  // }
 
   async loginAccount(req, res) {
     const { username, password } = req.body;

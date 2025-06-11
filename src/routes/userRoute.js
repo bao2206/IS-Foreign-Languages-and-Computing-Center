@@ -24,7 +24,7 @@ router.post(
   asyncHandle(userController.createStaff)
 );
 // router.get("/register", authMiddleware, userController.getUsertoCreateAccount);
-router.post("/register", userController.registerAccount);
+// router.post("/register", userController.registerAccount);
 router.post("/login", asyncHandle(userController.loginAccount));
 router.post(
   "/logout",

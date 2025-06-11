@@ -15,24 +15,14 @@ const ContactSchema = new Schema({
     phone: {
         type: String,
         required: [true, "Please provide your phone number"],
-        validate: {
-            validator: (v) => phoneRegex.test(v),
-            message: "Please provide a valid Vietnamese phone number"
-        }
+        // validate: {
+        //     validator: (v) => phoneRegex.test(v),
+        //     message: "Please provide a valid Vietnamese phone number"
+        // }
     },
     email: {
         type: String,
-        required: [true, "Please provide your email"],
-        validate: {
-            validator: (v) => emailRegex.test(v),
-            message: "Please provide a valid email address"
-        }
     },
-    // courseInterest: {
-    //     type: String,
-    //     required: [true, "Please provide the course you are interested in"],
-    //     trim: true
-    // },
     consultationContent: {
         type: String,
         required: [true, "Please provide your consultation content"],
@@ -46,6 +36,19 @@ const ContactSchema = new Schema({
             message: "Status must be one of: pending, processed, cancelled, class_assigned"
         },
         default: "pending"
+    },
+    parentName: {
+        type: String,
+        trim: true,
+        default: ""
+    },
+    parentPhone: {
+        type: String,
+        trim: true,
+    },
+    parentEmail: {
+        type: String,
+        trim: true,
     },
     assignedClass: {
         type: Schema.Types.ObjectId,
@@ -77,39 +80,5 @@ const ContactSchema = new Schema({
     timestamps: true
 });
 
-// // Add indexes for common queries
-// ContactSchema.index({ status: 1, createdAt: -1 });
-// ContactSchema.index({ phone: 1 });
-// ContactSchema.index({ email: 1 });
-
-// // Add method to check if consultation is pending
-// ContactSchema.methods.isPending = function() {
-//     return this.status === 'pending';
-// };
-
-// // Add method to check if consultation is processed
-// ContactSchema.methods.isProcessed = function() {
-//     return this.status === 'processed';
-// };
-
-// // Add method to check if consultation is assigned to a class
-// ContactSchema.methods.isAssignedToClass = function() {
-//     return this.status === 'class_assigned';
-// };
-
-// // Add static method to find pending consultations
-// ContactSchema.statics.findPending = function() {
-//     return this.find({ status: 'pending' });
-// };
-
-// // Add static method to find processed consultations
-// ContactSchema.statics.findProcessed = function() {
-//     return this.find({ status: 'processed' });
-// };
-
-// // Add static method to find consultations by status
-// ContactSchema.statics.findByStatus = function(status) {
-//     return this.find({ status });
-// };
 
 module.exports = mongoose.model("Contact", ContactSchema); 

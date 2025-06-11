@@ -9,9 +9,13 @@ class ContactController {
     async createPublicConsultation(req, res) {
         // console.log(req.body)
         const { name, phone, email, consultationContent } = req.body;
+        const validation = validateFields({ phone, email});
+        if (!validation.isValid) {
+          throw new BadRequestError(validation.errors);
+        }
         const phoneExist = await UserService.checkPhone(phone);
         const emailExist = await UserService.checkEmail(email);
-        
+        // console.log("create" ,phoneExist, emailExist)
         if (phoneExist) {
             throw new BadRequestError('Phone number already exists');
         }
@@ -37,20 +41,23 @@ class ContactController {
 
     async createAdminConsultation(req, res) {
         // console.log(req.body)
-        let isParent = false;
-        const { name, phone, email, consultationContent, status, notes, parent } = req.body;
-        
-        if (!req.username) {
-            return res.status(401).json({
-                success: false,
-                message: 'Username is required'
-            });
+        // let isParent = false;
+        const { name, phone, email, consultationContent, status, notes } = req.body;
+        console.log(req.body)
+        const validation = validateFields({ phone, email});
+        if (!validation.isValid) {
+          throw new BadRequestError(validation.errors);
         }
-
-
+        // if (!req.username) {
+        //     return res.status(401).json({
+        //         success: false,
+        //         message: 'Username is required'
+        //     });
+        // }
+        console.log(phone, email)
         const phoneExist = await UserService.checkPhone(phone);
         const emailExist = await UserService.checkEmail(email);
-        
+        console.log(phoneExist, emailExist)
         if (phoneExist) {
             throw new BadRequestError('Phone number already exists');
         }
@@ -58,9 +65,7 @@ class ContactController {
         if (emailExist) {
             throw new BadRequestError('Email already exists');
         }
-        if(isParent){
-
-        }
+        
         const contact = await Contact.create({
             name,
             phone,
@@ -155,7 +160,10 @@ class ContactController {
     async updateConsultation(req, res) {
         const { id } = req.params;
         const { name, phone, email, courseInterest, consultationContent, notes, status } = req.body;
-
+        const validation = validateFields({ phone, email});
+        if (!validation.isValid) {
+          throw new BadRequestError(validation.errors);
+        }
         const consultation = await Contact.findById(id);
 
         if (!consultation) {
