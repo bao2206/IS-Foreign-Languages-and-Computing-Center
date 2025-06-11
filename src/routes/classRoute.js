@@ -12,6 +12,10 @@ router.get("/", (req, res) => {
 // Get methods
 router.post("/classManager", asyncHandle(classController.getClassInformation));
 router.post(
+  "/getClassForTeacher",
+  asyncHandle(classController.getClassForTeacher)
+);
+router.post(
   "/getClassForStudent",
   asyncHandle(classController.getClassForStudent)
 );

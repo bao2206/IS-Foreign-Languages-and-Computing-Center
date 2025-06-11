@@ -1,50 +1,60 @@
 const ClassModel = require("../models/ClassModel");
 const ScheduleModel = require("../models/ScheduleModel");
+const UserService = require("./userService");
 
 const mongoose = require("mongoose");
 
 class SchedulesService {
   // Schedule CRUD operations
   async getSchedules(config) {
-    let query;
-    if (!config) {
-      throw new Error("Config is required");
+    if (!config) throw new Error("Config is required");
+
+    let queryObj = {};
+    let user;
+
+    // Xác định user nếu có authId
+    if (config.authId) {
+      user = await UserService.findByAuthId(config.authId);
     }
-    if (!config.populates) {
-      config.populates = [];
-    }
-    if (!config.action) {
-      config.action = "";
-    }
+
+    // Xây dựng điều kiện lọc
     switch (config.action) {
       case "getByTeacherId":
-        query = ScheduleModel.find({ teacher: config.teacherId }).populate(
-          "teacher"
-        );
+        if (!user) throw new Error("User not found");
+        queryObj.teacher = user._id;
         break;
       case "getByClassId":
-        query = ScheduleModel.find({ classId: config.classId }).populate({
-          path: "teacher",
-          model: "User",
-        });
+        queryObj.classId = config.classId;
         break;
       case "getByScheduleId":
-        query = ScheduleModel.findById(config.scheduleId);
+        queryObj._id = config.scheduleId;
         break;
       case "getByStudentId":
+        if (!user) throw new Error("User not found");
         const classData = await ClassModel.findOne({
-          students: config.studentId,
+          students: user._id,
         }).select("_id");
-        if (!classData) {
-          throw new Error("Class not found for this student");
-        }
-        query = ScheduleModel.find({ classId: classData._id }).populate(
-          "classId"
-        );
+        if (!classData) throw new Error("Class not found for this student");
+        queryObj.classId = classData._id;
+        break;
+      default:
+        // Nếu không có action thì lấy tất cả
         break;
     }
-    const scheduleData = await query.exec();
-    return scheduleData;
+
+    let query = ScheduleModel.find(queryObj).sort({ date: -1 });
+
+    // Hỗ trợ populate động
+    if (Array.isArray(config.populates)) {
+      config.populates.forEach((populate) => {
+        query = query.populate(populate);
+      });
+    } else {
+      // Mặc định populate teacher
+      query = query.populate("teacher").populate("classId");
+    }
+
+    return await query.exec();
   }
 
   async createSchedule(config) {

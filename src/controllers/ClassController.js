@@ -43,13 +43,34 @@ class ClassController {
     }
   }
 
+  async getClassForTeacher(req, res) {
+    try {
+      const teacherId = req.body.id;
+      const query = req.body.query;
+      if (!teacherId) {
+        return res.status(400).json({ message: "Teacher ID is required" });
+      }
+
+      const classData = await ClassService.getClassForTeacher(teacherId, query);
+      if (!classData) {
+        return res
+          .status(404)
+          .json({ message: "Classes not found for this teacher" });
+      }
+      return res.status(200).json(classData);
+    } catch (error) {
+      throw new ErrorCustom(error.message, 500);
+    }
+  }
+
   async getClassForStudent(req, res) {
     try {
-      const studentId = req.body.studentId;
+      const studentId = req.body.id;
+      const query = req.body.query;
       if (!studentId) {
         return res.status(400).json({ message: "Student ID is required" });
       }
-      const classData = await ClassService.getClassForStudent(studentId);
+      const classData = await ClassService.getClassForStudent(studentId, query);
       if (!classData) {
         return res
           .status(404)

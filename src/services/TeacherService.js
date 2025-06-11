@@ -1,19 +1,26 @@
 const userModel = require("../models/UserModel");
 const authModel = require("../models/AuthModel");
 const CertificateModel = require("../models/CertificateModel");
+const RoleService = require("./RoleService");
+const AuthService = require("./AuthService");
 class TeacherService {
   async getAllTeachers() {
     try {
-      // role "teacher" là role của giáo viên trong authModel
-      // hiện tại chưa xét role cho giáo viên, chỉ xét authId
+      // Tìm role "teacher"
+      const role = await RoleService.findRole("teacher");
+      if (!role) throw new Error("Role 'teacher' not found");
 
-      return await authModel.find().then(async (teachers) => {
-        const teacherIds = teachers.map((teacher) => teacher._id);
-        const teacherDetails = await userModel.find({
-          authId: { $in: teacherIds },
+      // Lấy tất cả user có authId liên kết tới Auth có role là "teacher"
+      const users = await userModel
+        .find({ authId: { $exists: true } })
+        .populate({
+          path: "authId",
+          select: "username role",
+          match: { role: role._id },
         });
-        return teacherDetails;
-      });
+
+      // Lọc ra user có authId khác null (tức là đúng role teacher)
+      return users.filter((user) => user.authId);
     } catch (error) {
       throw error;
     }

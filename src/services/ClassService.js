@@ -2,20 +2,79 @@ const { config } = require("dotenv");
 const ClassModel = require("../models/ClassModel");
 const ScheduleModel = require("../models/ScheduleModel");
 const ShedulesService = require("../services/SchedulesService");
+const UserService = require("./userService");
 
 const mongoose = require("mongoose");
 
 class ClassService {
+  async getClassForTeacher(id, query = {}) {
+    const teacher = await UserService.findByAuthId(id);
+    const teacherId = teacher._id;
+
+    if (!teacherId) {
+      throw new Error("Teacher ID is required");
+    }
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filters = {};
+    if (query.name) {
+      filters.classname = { $regex: query.name, $options: "i" };
+    }
+    filters.teachers = teacherId;
+
+    const total = await ClassModel.countDocuments(filters);
+
+    const classes = await ClassModel.find(filters)
+      .populate({ path: "students", model: "User" })
+      .populate({ path: "teachers", model: "User" })
+      .populate("courseId")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    return {
+      data: classes,
+      total,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
   // Class CRUD operations
-  async getClassForStudent(studentId) {
+  async getClassForStudent(id, query = {}) {
+    const student = await UserService.findByAuthId(id);
+    const studentId = teacher._id;
     if (!studentId) {
       throw new Error("Student ID is required");
     }
-    const classes = await ClassModel.find({ students: studentId })
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filters = {};
+    if (query.name) {
+      filters.classname = { $regex: query.name, $options: "i" };
+    }
+    filters.students = studentId;
+
+    const total = await ClassModel.countDocuments(filters);
+
+    const classes = await ClassModel.find(filters)
       .populate({ path: "students", model: "User" })
       .populate({ path: "teachers", model: "User" })
-      .populate("courseId");
-    return classes;
+      .populate("courseId")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    return {
+      data: classes,
+      total,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+    };
   }
   // Class CRUD operations
   async getClassesInformation(config) {
