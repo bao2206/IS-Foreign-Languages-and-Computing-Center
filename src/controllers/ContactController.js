@@ -13,16 +13,16 @@ class ContactController {
         if (!validation.isValid) {
           throw new BadRequestError(validation.errors);
         }
-        const phoneExist = await UserService.checkPhone(phone);
-        const emailExist = await UserService.checkEmail(email);
+        // const phoneExist = await UserService.checkPhone(phone);
+        // const emailExist = await UserService.checkEmail(email);
         // console.log("create" ,phoneExist, emailExist)
-        if (phoneExist) {
-            throw new BadRequestError('Phone number already exists');
-        }
+        // if (phoneExist) {
+        //     throw new BadRequestError('Phone number already exists');
+        // }
 
-        if (emailExist) {
-            throw new BadRequestError('Email already exists');
-        }
+        // if (emailExist) {
+        //     throw new BadRequestError('Email already exists');
+        // }
         
         const contact = await Contact.create({
             name,

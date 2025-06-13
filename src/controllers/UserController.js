@@ -90,10 +90,10 @@ class UserController {
     });
   }
   async createStaff(req, res) {
-    const { name, role, email, phone, citizenId } = req.body;
-
+    const { name, role, email, phone, citizenID } = req.body;
+    console.log(req.body)
     // Validate fields if provided
-    const validation = validateFields({ phone, email, citizenId });
+    const validation = validateFields({ phone, email, citizenID });
     if (!validation.isValid) {
       throw new BadRequestError(validation.errors);
     }
@@ -105,10 +105,13 @@ class UserController {
     if(checkPhone){
       throw new BadRequestError("Phone already exists");
     }
-    const checkCitizenId = await UserService.checkCitizenId(citizenId);
+    console.log('run')
+    const checkCitizenId = await UserService.checkCitizenId(citizenID);
+    console.log(checkCitizenId)
     if(checkCitizenId){
       throw new BadRequestError("Citizen ID already exists");
     }
+    
     const newStaff = await UserService.createNewStaff(req.body);
     const username = generateUsername(email);
     const password = generatePassword(8);

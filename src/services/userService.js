@@ -101,6 +101,10 @@ class UserService {
   async checkEmail(email) {
     return !!(await userModel.findOne({ email }));
   }
+  async checkCitizenId(citizenID) {
+    console.log("run service")
+    return !!(await userModel.findOne({ citizenID}));
+  }
   async findByName(name) {
     return await userModel.findOne({ name });
   }
