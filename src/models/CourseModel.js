@@ -11,6 +11,11 @@ const CourseSchema = new Schema({
     max: 10,
   },
   description: String,
+  catalog: {
+    type: String,
+    enum: ["Languages", "Computing", "None", "Languages and Computing"],
+    default: "None",
+  },
   price: {
     type: Number,
     required: [true, "Please provide a price"],

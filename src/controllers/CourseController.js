@@ -13,7 +13,9 @@ class CourseController {
 
   async getCourse(req, res) {
     try {
-      const course = await CourseService.getCourses(req.body.config);
+      console.log(req.body);
+
+      const course = await CourseService.getCourses(req.body);
       if (!course) {
         return res.status(404).json({ message: "Course not found" });
       }
