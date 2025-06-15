@@ -91,27 +91,27 @@ class UserController {
   }
   async createStaff(req, res) {
     const { name, role, email, phone, citizenID } = req.body;
-    console.log(req.body)
+    console.log(req.body);
     // Validate fields if provided
     const validation = validateFields({ phone, email, citizenID });
     if (!validation.isValid) {
       throw new BadRequestError(validation.errors);
     }
     const checkEmail = await UserService.checkEmail(email);
-    if(checkEmail){
+    if (checkEmail) {
       throw new BadRequestError("Email already exists");
     }
     const checkPhone = await UserService.checkPhone(phone);
-    if(checkPhone){
+    if (checkPhone) {
       throw new BadRequestError("Phone already exists");
     }
-    console.log('run')
+    console.log("run");
     const checkCitizenId = await UserService.checkCitizenId(citizenID);
-    console.log(checkCitizenId)
-    if(checkCitizenId){
+    console.log(checkCitizenId);
+    if (checkCitizenId) {
       throw new BadRequestError("Citizen ID already exists");
     }
-    
+
     const newStaff = await UserService.createNewStaff(req.body);
     const username = generateUsername(email);
     const password = generatePassword(8);
@@ -307,7 +307,7 @@ class UserController {
     if (!user) throw new NotFoundError("User not found");
 
     const { phone, email, citizenId } = req.body;
-    
+
     // Validate fields if provided
     const validation = validateFields({ phone, email, citizenId });
     if (!validation.isValid) {
@@ -437,14 +437,17 @@ class UserController {
     });
   }
   async updateRole(req, res) {
-    const { id } = req.params;
+    const { id } = req.body;
     const { role_id } = req.body;
-    const userId = await UserService.findByIdOfAuth(id);
-    if (!userId) throw new NotFoundError("User not found");
+
+    // const userId = await UserService.findByIdOfAuth(id);
+    // if (!userId) throw new NotFoundError("User not found");
     const role = await RoleService.findRoleById(role_id);
+
     // const role = await RoleService.getAllRoles();
     if (!role) throw new NotFoundError("Role not found");
-    const updatedUser = await UserService.updateUserRole(userId, role);
+    const updatedUser = await UserService.updateUserRole(id, role);
+
     res.status(200).json({
       message: "User role updated successfully",
       data: updatedUser,
@@ -461,16 +464,16 @@ class UserController {
 
   async validateUserFields(req, res) {
     const { phone, email, citizenId } = req.body;
-    
+
     const validation = validateFields({ phone, email, citizenId });
-    
+
     if (!validation.isValid) {
       throw new BadRequestError(validation.errors);
     }
-    
+
     return res.status(200).json({
       message: "Fields are valid",
-      data: { phone, email, citizenId }
+      data: { phone, email, citizenId },
     });
   }
 }

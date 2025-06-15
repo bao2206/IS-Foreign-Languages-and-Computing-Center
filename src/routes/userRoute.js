@@ -52,7 +52,7 @@ router.post("/forgot-password", asyncHandle(userController.forgotPassword));
 router.put("/reset-password/:token", asyncHandle(userController.resetPassword));
 
 router.put(
-  "/update-role/:id",
+  "/update-role/",
   authMiddleware,
   checkPermission("update_user"),
   asyncHandle(userController.updateRole)
@@ -99,9 +99,6 @@ router.delete(
 );
 
 // Validate user fields
-router.post(
-  "/validate-fields",
-  asyncHandle(userController.validateUserFields)
-);
+router.post("/validate-fields", asyncHandle(userController.validateUserFields));
 
 module.exports = router;
