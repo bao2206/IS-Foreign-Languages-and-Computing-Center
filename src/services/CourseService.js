@@ -10,15 +10,15 @@ class CourseService {
     if (!config) throw new Error("Config is required");
     if (!config.action) config.action = "getAll";
 
-    // Phân trang
+    // Pagination
     const page = parseInt(config.page) || 1;
     const limit = parseInt(config.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // Xây dựng bộ lọc
+    // Build filters
     let filters = {};
-    if (config.coursename) {
-      filters.name = { $regex: config.coursename, $options: "i" };
+    if (config.name) {
+      filters.coursename = { $regex: config.name, $options: "i" };
     }
     if (config.status) {
       filters.status = config.status;
@@ -26,15 +26,21 @@ class CourseService {
     if (config.catalog) {
       filters.catalog = config.catalog;
     }
-
-    // Có thể bổ sung thêm các filter khác nếu cần
+    if (typeof config.is_special !== "undefined") {
+      filters.is_special = config.is_special;
+    }
 
     let query = courseModel.find(filters);
 
-    // Áp dụng phân trang
+    // Sorting
+    if (config.sort) {
+      query = query.sort(config.sort);
+    }
+
+    // Apply pagination
     query = query.skip(skip).limit(limit);
 
-    // Đếm tổng số bản ghi cho phân trang
+    // Count total documents for pagination
     const total = await courseModel.countDocuments(filters);
 
     const courseData = await query.exec();
