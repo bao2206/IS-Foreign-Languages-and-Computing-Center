@@ -14,8 +14,7 @@ class CourseController {
   async getCourse(req, res) {
     try {
       console.log(req.body);
-
-      const course = await CourseService.getCourses(req.body);
+      const course = await CourseService.getCourses(req.body.config);
       if (!course) {
         return res.status(404).json({ message: "Course not found" });
       }
@@ -49,27 +48,6 @@ class CourseController {
         return res.status(404).json({ message: "Course not found" });
       }
       return res.status(204).send();
-    } catch (error) {
-      throw new ErrorCustom(error.message, 500);
-    }
-  }
-
-  async getCourseById(req, res) {
-    try {
-      const { id } = req.params;
-      const course = await CourseService.getCourseById(id);
-      
-      if (!course) {
-        return res.status(404).json({ 
-          success: false,
-          message: "Course not found" 
-        });
-      }
-      
-      return res.status(200).json({
-        success: true,
-        data: course
-      });
     } catch (error) {
       throw new ErrorCustom(error.message, 500);
     }
