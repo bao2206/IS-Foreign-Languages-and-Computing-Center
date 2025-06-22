@@ -3,6 +3,9 @@ const ClassModel = require("../models/ClassModel");
 const ScheduleModel = require("../models/ScheduleModel");
 const ShedulesService = require("../services/SchedulesService");
 const UserService = require("./userService");
+const Contact = require("../models/ContactModel");
+const CourseModel = require("../models/CourseModel");
+const PaymentService = require("../services/PaymentService");
 
 const mongoose = require("mongoose");
 
@@ -240,6 +243,92 @@ class ClassService {
     );
   }
 
+  async addNewStudentToClass({ classId, studentId, contactId }) {
+    const classDoc = await ClassModel.findById(classId);
+    if (!classDoc) throw new Error("Class not found");
+    if (classDoc.students.includes(studentId)) throw new Error("Student already in class");
+    if (classDoc.students.length >= classDoc.quantity) throw new Error("Class is full");
+    classDoc.students.push(studentId);
+    await classDoc.save();
+
+    const contact = await Contact.findById(contactId);
+    if (!contact) throw new Error("Contact not found");
+
+    const course = await CourseModel.findById(classDoc.courseId);
+    if (!course) throw new Error("Course not found");
+    console.log("Test",course);
+    const paymentData = {
+      student: studentId,
+      studentName: contact.name,
+      studentEmail : contact.email,
+      studentPhone: contact.phone,
+      // parent: contact.parentId || null,
+      parentName: contact.parentName || "",
+      parentEmail: contact.parentEmail || "",
+      parentPhone: contact.parentPhone || "",
+      course: course._id,
+      courseName: course.coursename,
+      coursePrice: course.price,
+      class: classDoc._id,
+      className: classDoc.classname,
+      paymentDate: new Date(),
+      status: "pending",
+      contactStudent: contact,
+      // paymentMethod is omitted for pending status
+      history: [{
+        action: "payment_initiated",
+        by: studentId,
+        date: new Date(),
+        note: "Invoice created upon class assignment"
+      }]
+    };
+    await PaymentService.createPayment(paymentData);
+
+    contact.status = "class_assigned";
+    await contact.save();
+
+    return classDoc;
+  }
+
+  async removeStudentFromClass(classId, studentId) {
+    return await ClassModel.findByIdAndUpdate(
+      classId,
+      { $pull: { students: studentId } },
+      { new: true }
+    );
+  }
+
+  async deleteClass(classId) {
+    const schedules = await ShedulesService.getSchedules({
+      action: "getByClassId",
+      classId: classId,
+    });
+
+    if (schedules.length > 0) {
+      const schedulesDel = await ShedulesService.deleteSchedule({
+        action: "deleteAllSchedules",
+        classId: classId,
+      });
+    }
+    const classData = await ClassModel.findByIdAndDelete(classId);
+    if (!classData) {
+      throw new Error("Class not found");
+    }
+    return classData;
+  }
+
+  async getOpenClassesByCourseId(courseId) {
+    const classes = await ClassModel.find({
+      courseId: courseId,
+      status: "Incomplete" // Open classes are those with "Incomplete" status
+    })
+    .populate({ path: "teachers", model: "User", select: "name email" })
+    .populate("courseId", "coursename description price")
+    .sort({ createdAt: -1 });
+
+    return classes;
+  }
+
   async addStudentToClass(classId, studentId) {
     const student = await mongoose
       .model("User")
@@ -279,32 +368,6 @@ class ClassService {
     );
   }
 
-  async removeStudentFromClass(classId, studentId) {
-    return await ClassModel.findByIdAndUpdate(
-      classId,
-      { $pull: { students: studentId } },
-      { new: true }
-    );
-  }
-
-  async deleteClass(classId) {
-    const schedules = await ShedulesService.getSchedules({
-      action: "getByClassId",
-      classId: classId,
-    });
-
-    if (schedules.length > 0) {
-      const schedulesDel = await ShedulesService.deleteSchedule({
-        action: "deleteAllSchedules",
-        classId: classId,
-      });
-    }
-    const classData = await ClassModel.findByIdAndDelete(classId);
-    if (!classData) {
-      throw new Error("Class not found");
-    }
-    return classData;
-  }
 }
 
 module.exports = new ClassService();

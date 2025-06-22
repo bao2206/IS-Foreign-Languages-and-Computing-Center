@@ -54,6 +54,10 @@ class CourseService {
     return await courseModel.findByIdAndDelete(id);
   }
 
+  async getCourseById(id) {
+    return await courseModel.findById(id);
+  }
+
   // Registration methods
 
   async getRegistrations(config) {
@@ -123,6 +127,12 @@ class CourseService {
 
   async deleteRegistration(id) {
     return await CourseRegistrationModel.findByIdAndDelete(id);
+  }
+  async getAllCourseByName(courseName){
+    return await CourseRegistrationModel.find({
+      coursename : courseName,
+      status : "active"
+    })
   }
 }
 

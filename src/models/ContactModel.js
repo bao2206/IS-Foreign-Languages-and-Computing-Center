@@ -75,6 +75,11 @@ const ContactSchema = new Schema({
     updatedAt: {
         type: Date,
         default: Date.now
+    },
+    assignedCourse: {
+        type: Schema.Types.ObjectId,
+        ref: "Course",
+        default: null
     }
 }, {
     timestamps: true

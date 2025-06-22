@@ -14,6 +14,7 @@ router.post('/public', ContactController.createPublicConsultation);
 router.post('/admin', getUsernameFromLocalStorage, asyncHandle(ContactController.createAdminConsultation));
 // router.get('/', asyncHandle(ContactController.getAllConsultations));
 router.get('/', ContactController.getAllConsultations)
+router.get('/processed', ContactController.getProcessedConsultations)
 router.get('/:id', asyncHandle(ContactController.getConsultation));
 router.patch('/:id', asyncHandle(ContactController.updateConsultation));
 router.patch('/:id/status', asyncHandle(ContactController.updateStatus));

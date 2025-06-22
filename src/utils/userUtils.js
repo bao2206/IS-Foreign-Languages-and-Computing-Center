@@ -1,3 +1,6 @@
+// const AuthService = require("../services/AuthService");
+// const UserService = require("../services/userService");
+// const ParentService = require("../services/ParentService");
 function generateUsername(email) {
   return email.split("@")[0];
 }
@@ -30,9 +33,18 @@ function generatePassword(length = 8) {
   
     return passwordChars.join('');
 }
+async function createAccount(email) {
+  // Generate username and password
+  const username = generateUsername(email);
+  const password = generatePassword(8);
+  return {
+    username, password
+  }
+}
 
 
 module.exports = {
     generateUsername,
-    generatePassword
+    generatePassword,
+    createAccount
 }

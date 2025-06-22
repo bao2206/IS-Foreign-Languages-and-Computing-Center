@@ -105,7 +105,7 @@ class UserController {
     if (checkPhone) {
       throw new BadRequestError("Phone already exists");
     }
-    console.log("run");
+   
     const checkCitizenId = await UserService.checkCitizenId(citizenID);
     console.log(checkCitizenId);
     if (checkCitizenId) {
@@ -474,6 +474,68 @@ class UserController {
     return res.status(200).json({
       message: "Fields are valid",
       data: { phone, email, citizenId },
+    });
+  }
+
+  async getAllStudents(req, res) {
+    const { page = 1, limit = 10, search, status, sex } = req.query;
+    
+    // Parse pagination parameters
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    // Build query object
+    const query = {};
+    
+    // Get student role ID
+    const studentRole = await RoleService.findRole('student');
+    if (!studentRole) {
+      throw new NotFoundError('Student role not found');
+    }
+
+    // Get all auth IDs with student role
+    const auths = await AuthService.findRole({ role: studentRole._id });
+    if (!auths || auths.length === 0) {
+      return res.status(200).json({
+        data: [],
+        total: 0,
+        currentPage: parsedPage,
+        totalPages: 0,
+        limit: parsedLimit,
+      });
+    }
+
+    const authIds = auths.map((auth) => auth._id);
+    query.authId = { $in: authIds };
+
+    // Add additional filters
+    if (status) {
+      query.status = status;
+    }
+
+    if (sex) {
+      query.sex = sex;
+    }
+
+    if (search) {
+      const searchRegex = { $regex: search, $options: "i" };
+      query.$or = [
+        { name: searchRegex },
+        { phone: searchRegex },
+        { email: searchRegex },
+      ];
+    }
+
+    const users = await UserService.getAllUsers(query, skip, parsedLimit);
+    const totalUsers = await UserService.countUsers(query);
+
+    res.status(200).json({
+      data: users,
+      total: totalUsers,
+      currentPage: parsedPage,
+      totalPages: Math.ceil(totalUsers / parsedLimit),
+      limit: parsedLimit,
     });
   }
 }

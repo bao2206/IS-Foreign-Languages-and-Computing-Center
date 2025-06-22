@@ -54,6 +54,27 @@ class CourseController {
     }
   }
 
+  async getCourseById(req, res) {
+    try {
+      const { id } = req.params;
+      const course = await CourseService.getCourseById(id);
+      
+      if (!course) {
+        return res.status(404).json({ 
+          success: false,
+          message: "Course not found" 
+        });
+      }
+      
+      return res.status(200).json({
+        success: true,
+        data: course
+      });
+    } catch (error) {
+      throw new ErrorCustom(error.message, 500);
+    }
+  }
+
   // Registration methods
 
   async getRegistratons(req, res) {

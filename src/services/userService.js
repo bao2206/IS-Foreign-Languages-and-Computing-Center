@@ -160,7 +160,6 @@ class UserService {
   async createNewStaff(data) {
     return await userModel.create(data);
   }
-
   async findByIdOfAuth(authId) {
     return await userModel.findOne({ authId });
   }

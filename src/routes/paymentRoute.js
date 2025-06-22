@@ -1,15 +1,14 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const PaymentController = require('../controllers/PaymentController');
-const authMiddleware = require('../middlewares/authMiddleware');
-const checkPermission = require('../middlewares/checkPermission');
-const { asyncHandle } = require('../utils/asyncHandle');
+const PaymentController = require("../controllers/PaymentController");
+const { asyncHandle } = require("../utils/asyncHandle");
 
-// Process payment route with authentication and permission check
-router.post('/process', 
-    authMiddleware,
-    // checkPermission('make_payment'),
-    asyncHandle(PaymentController.processPayment)
-);
+router.post("/", asyncHandle(PaymentController.createPayment));
+router.get("/", asyncHandle(PaymentController.getAllPayments));
+router.get("/:id", asyncHandle(PaymentController.getPaymentById));
+router.put("/:id", asyncHandle(PaymentController.updatePayment));
+router.post("/payments/:paymentId/complete-cash", PaymentController.completeCashPayment);
+router.delete("/:id", asyncHandle(PaymentController.deletePayment));
+router.patch("/:id/status", asyncHandle(PaymentController.updatePaymentStatus));
 
-module.exports = router; 
+module.exports = router;

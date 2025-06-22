@@ -106,7 +106,15 @@ class ClassController {
       throw new ErrorCustom(error.message, 500);
     }
   }
-
+  async addNewStudentToClass(req, res) {
+    try {
+      const { classId, studentId, contactId } = req.body;
+      const updatedClass = await ClassService.addNewStudentToClass({ classId, studentId, contactId });
+      res.status(200).json({ success: true, data: updatedClass });
+    } catch (error) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  }
   async removeStudentFromClass(req, res) {
     try {
       const classId = req.body.classId;
@@ -131,6 +139,29 @@ class ClassController {
         return res.status(404).json({ message: "Class not found" });
       }
       return res.status(200).json(classData);
+    } catch (error) {
+      throw new ErrorCustom(error.message, 500);
+    }
+  }
+
+  async getOpenClassesByCourseId(req, res) {
+    try {
+      const { courseId } = req.params;
+      
+      if (!courseId) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Course ID is required" 
+        });
+      }
+
+      const classes = await ClassService.getOpenClassesByCourseId(courseId);
+      
+      return res.status(200).json({
+        success: true,
+        data: classes,
+        total: classes.length
+      });
     } catch (error) {
       throw new ErrorCustom(error.message, 500);
     }

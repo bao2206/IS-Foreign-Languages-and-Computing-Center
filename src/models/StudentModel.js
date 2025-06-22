@@ -7,16 +7,16 @@ const StudentSchema = new Schema({
         type: Schema.Types.ObjectId, ref: 'User', required: true
     },
     parentId:{
-        type: Schema.Types.ObjectId, ref: 'Parent', required: true
+        type: Schema.Types.ObjectId, ref: 'Parent'
     },
-    classId:{
-        type: Schema.Types.ObjectId, ref: 'Class', required: true
-    },
+    classId:[{
+        type: Schema.Types.ObjectId, ref: 'Class'
+    }],
     points: [{
-        type: Schema.Types.ObjectId, ref: 'Point', required: true
+        type: Schema.Types.ObjectId, ref: 'Point'
     }],
     attendance:[{
-        type: Schema.Types.ObjectId, ref: 'Attendance', required: true
+        type: Schema.Types.ObjectId, ref: 'Attendance'
     }]
 });
 

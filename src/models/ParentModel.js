@@ -14,18 +14,11 @@ const ParentSchema = new Schema({
     }],
     relationship: {
         type: String,
-        enum: ["father", "mother", "guardian"],
-        required: true
-    },
-    emergencyContact: {
-        phone: {
-            type: String,
-            required: true
-        },
-        address: {
-            type: String,
-            // required: true
-        }
+        // enum: ["father", "mother", "guardian"],
+        // required: true
+    }, 
+    phone: {
+        type: String
     },
     paymentHistory: [{
         type: Schema.Types.ObjectId,

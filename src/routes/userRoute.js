@@ -14,6 +14,7 @@ router.get(
   asyncHandle(userController.getAllUsers)
 );
 router.get("/staff", asyncHandle(userController.getUsersAreStaff));
+router.get("/students", asyncHandle(userController.getAllStudents));
 
 // router.get('/', userController.getAllUsers);
 // tạo nhân viên mới

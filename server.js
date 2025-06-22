@@ -22,6 +22,7 @@ app.get("/", (req, res) => {
 // );
 // Import database connection
 const { connectDB } = require("./src/config/database");
+
 // const createAdmin = async () => {
 //   const admin = await AccountService.FindUserByRoleAdmin({ role: "admin" });
 //   console.log("TEST", admin);
@@ -41,6 +42,23 @@ const { connectDB } = require("./src/config/database");
 
 (async () => {
   await connectDB();
+
+  // Update all existing payments to have coursePrice: 0 if not present
+  // try {
+  //   const Payment = require('./src/models/PaymentModel');
+  //   const result = await Payment.updateMany(
+  //     { coursePrice: { $exists: false } },
+  //     { $set: { coursePrice: 0 } }
+  //   );
+  //   if (result.modifiedCount > 0) {
+  //     console.log(`Updated ${result.modifiedCount} payment(s) to add coursePrice: 0`);
+  //   } else {
+  //     console.log('No payments needed coursePrice update.');
+  //   }
+  // } catch (err) {
+  //   console.error('Error updating coursePrice in payments:', err);
+  // }
+
   // await createAdmin();
   // await initAdminRole();
   // await AuthModel.updateOne(
