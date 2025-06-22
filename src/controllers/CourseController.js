@@ -1,6 +1,6 @@
 const CourseService = require("../services/CourseService");
 const { ErrorCustom } = require("../core/errorCustom");
-
+const ClassModel = require('../models/ClassModel');
 class CourseController {
   async createCourse(req, res) {
     try {
@@ -114,6 +114,17 @@ class CourseController {
       return res.status(200).json(registration);
     } catch (error) {
       throw new ErrorCustom(error.message, 500);
+    }
+  }
+  async getOpenClassesByCourseId (req, res) {
+    try {
+      const { courseId } = req.params;
+      // Adjust the query according to your schema (e.g., status: 'open')
+      const openClasses = await ClassModel.find({ course: courseId, status: 'Incomplete' });
+      res.status(200).json(openClasses);
+    } catch (error) {
+      console.error('Error fetching open classes by course ID:', error);
+      res.status(500).json({ message: 'Failed to fetch open classes' });
     }
   }
 }
