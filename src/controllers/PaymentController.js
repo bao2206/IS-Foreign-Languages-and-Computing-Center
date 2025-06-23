@@ -27,6 +27,7 @@ async function createUserAndAccount({ name, email, phone, roleId }) {
 async function handlePaymentCompletion({ paymentId, paymentMethod, req }) {
   // 1. Update payment status and method
   const payment = await PaymentModel.findById(paymentId);
+  console.log(payment);
   if (!payment) return { status: 404, result: { success: false, message: "Payment not found" } };
 
   payment.status = "completed";

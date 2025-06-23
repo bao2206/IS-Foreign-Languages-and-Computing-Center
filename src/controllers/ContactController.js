@@ -73,7 +73,7 @@ class ContactController {
         let courseInfo = null;
         if (assignedCourse) {
             // Use getCourseById for direct lookup
-            const course = await CourseService.getCourseById(assignedCourse);
+            const course = await CourseService.getByCourseId(assignedCourse);
             if (course) {
                 courseInfo = {
                     id: course._id,
@@ -194,7 +194,7 @@ class ContactController {
         // Get course information if assignedCourse is being updated
         let courseInfo = null;
         if (assignedCourse && assignedCourse !== consultation.assignedCourse) {
-            const course = await CourseService.getCourses({ action: 'getById', id: assignedCourse });
+            const course = await CourseService.getCourses({ action: 'getByCourseId', id: assignedCourse });
             if (course) {
                 courseInfo = {
                     id: course._id,
