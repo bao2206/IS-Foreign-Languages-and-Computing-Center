@@ -16,6 +16,12 @@ router.get(
 router.get("/staff", asyncHandle(userController.getUsersAreStaff));
 router.get("/students", asyncHandle(userController.getAllStudents));
 
+router.get(
+  "/profile",
+  authMiddleware,
+  asyncHandle(userController.getUserProfile)
+);
+
 // router.get('/', userController.getAllUsers);
 // tạo nhân viên mới
 router.post(

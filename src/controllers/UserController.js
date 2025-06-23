@@ -89,6 +89,29 @@ class UserController {
       limit: parsedLimit,
     });
   }
+
+  async getUserProfile(req, res) {
+    let token = req.header("Authorization")?.replace("Bearer ", "");
+    if (!token) token = req.query.token || req.params.token;
+    let userId = "";
+    jwt.verify(token, process.env.JWT_SECRET, async (error, decoded) => {
+      if (error) return next(new UnAuthorizedError("Invalid token."));
+      console.log("Decoded", decoded);
+
+      userId = decoded.id;
+    });
+    console.log("userId", userId);
+
+    const user = await UserService.getUserProfile(userId);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+    return res.status(200).json({
+      message: "User profile retrieved successfully",
+      data: user,
+    });
+  }
+
   async createStaff(req, res) {
     const { name, role, email, phone, citizenID } = req.body;
     console.log(req.body);
@@ -105,7 +128,7 @@ class UserController {
     if (checkPhone) {
       throw new BadRequestError("Phone already exists");
     }
-   
+
     const checkCitizenId = await UserService.checkCitizenId(citizenID);
     console.log(checkCitizenId);
     if (checkCitizenId) {
@@ -479,7 +502,7 @@ class UserController {
 
   async getAllStudents(req, res) {
     const { page = 1, limit = 10, search, status, sex } = req.query;
-    
+
     // Parse pagination parameters
     const parsedPage = parseInt(page);
     const parsedLimit = parseInt(limit);
@@ -487,11 +510,11 @@ class UserController {
 
     // Build query object
     const query = {};
-    
+
     // Get student role ID
-    const studentRole = await RoleService.findRole('student');
+    const studentRole = await RoleService.findRole("student");
     if (!studentRole) {
-      throw new NotFoundError('Student role not found');
+      throw new NotFoundError("Student role not found");
     }
 
     // Get all auth IDs with student role

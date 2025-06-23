@@ -102,8 +102,8 @@ class UserService {
     return !!(await userModel.findOne({ email }));
   }
   async checkCitizenId(citizenID) {
-    console.log("run service")
-    return !!(await userModel.findOne({ citizenID}));
+    console.log("run service");
+    return !!(await userModel.findOne({ citizenID }));
   }
   async findByName(name) {
     return await userModel.findOne({ name });
@@ -195,6 +195,17 @@ class UserService {
 
   async getUsersAreStaff() {
     return await userModel.find().populate({
+      path: "authId",
+      select: "username role",
+      populate: {
+        path: "role",
+        select: "name",
+      },
+    });
+  }
+
+  async getUserProfile(authId) {
+    return await userModel.findOne({ authId: authId }).populate({
       path: "authId",
       select: "username role",
       populate: {
