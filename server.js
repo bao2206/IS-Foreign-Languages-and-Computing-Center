@@ -11,6 +11,11 @@ const mongoose = require("mongoose");
 const AccountService = require("./src/services/accountService");
 const AuthModel = require("./src/models/AuthModel");
 const RoleModel = require("./src/models/RoleModel");
+const {generateUsername} = require("./src/utils/userUtils");
+const AuthService = require("./src/services/AuthService");
+const UserModel = require("./src/models/UserModel");
+const StudentModel = require("./src/models/StudentModel")
+const ClassModel =  require("./src/models/ClassModel")
 // const {initAdminRole} = require("./src/init/initAdminRole");
 const { updatePermissionByCode } = require("./src/data/updatePermissionByCode");
 app.get("/", (req, res) => {
@@ -40,48 +45,56 @@ const { connectDB } = require("./src/config/database");
 //   console.log("Admin created successfully");
 // };
 
+async function createTenStudentsAndAssignToClass() {
+  // 1. Get the student role
+  const studentRole = "6800d06932b289b2fe5b0403";
+
+
+  const studentsData = [];
+  for (let i = 1; i <= 10; i++) {
+    // Generate fake data
+    const name = `Student ${i}`;
+    const email = `student${i}@example.com`;
+    const phone = `09000000${i.toString().padStart(2, "0")}`;
+    const username = generateUsername(email);
+    const password = "123456Abc";
+    const classId = '68527221304cc3a59f87f71f'
+    // 2. Create Auth account
+    const auth = await AuthService.createAccount(username, password, studentRole);
+
+    // 3. Create User
+    const user = await UserModel.create({
+      name,
+      email,
+      phone,
+      authId: auth._id,
+    });
+
+    // 4. Create StudentModel
+    const student = await StudentModel.create({
+      userId: user._id,
+      classId,
+    });
+
+    // 5. Add student to class
+    await ClassModel.findByIdAndUpdate(
+      classId ,
+      { $push: { students: { student: user._id, status: "paid" } } }
+    );
+
+    studentsData.push({
+      user,
+      auth: { username, password },
+      student,
+    });
+  }
+
+  return studentsData;
+}
 (async () => {
   await connectDB();
-
-  // Update all existing payments to have coursePrice: 0 if not present
-  // try {
-  //   const Payment = require('./src/models/PaymentModel');
-  //   const result = await Payment.updateMany(
-  //     { coursePrice: { $exists: false } },
-  //     { $set: { coursePrice: 0 } }
-  //   );
-  //   if (result.modifiedCount > 0) {
-  //     console.log(`Updated ${result.modifiedCount} payment(s) to add coursePrice: 0`);
-  //   } else {
-  //     console.log('No payments needed coursePrice update.');
-  //   }
-  // } catch (err) {
-  //   console.error('Error updating coursePrice in payments:', err);
-  // }
-
-  // await createAdmin();
-  // await initAdminRole();
-  // await AuthModel.updateOne(
-  //
-  // );  { username: "superadmin" },
-  //   { $set: { role: new mongoose.Types.ObjectId("6800d06a32b289b2fe5b040c") } }
-
-  // console.log("Cập nhật role thành công!");
-
-  // await updatePermissionByCode("baopro2206", ["680f2a2914c5a8d40e5c55d2"]);
-  // const role = await RoleModel.findById("6800d06a32b289b2fe5b040c").populate(
-  //   "permissions"
-  // );
-
-  // if (!role) {
-  //   console.log("Role not found");
-  //   return;
-  // }
-
-  // console.log("Tên các quyền thuộc role:");
-  // role.permissions.forEach((perm) => {
-  //   console.log(`- ID: ${perm._id} | Key: ${perm.key} | Name: ${perm.name}`);
-  // });
+  // await createTenStudentsAndAssignToClass()
+ 
 })();
 
 // Config view

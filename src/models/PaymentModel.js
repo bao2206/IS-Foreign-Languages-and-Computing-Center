@@ -89,6 +89,11 @@ const PaymentSchema = new Schema(
         return this.status !== "pending";
       },
     },
+    contactStudent: {
+      type: Schema.Types.ObjectId,
+      ref: "Contact",
+      required: true,
+    },
     history: [PaymentHistorySchema],
   },
   { timestamps: true }

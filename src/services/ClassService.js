@@ -243,10 +243,10 @@ class ClassService {
     );
   }
 
-  async addNewStudentToClass({ classId, studentId, contactId }) {
+  async addNewStudentToClass({ classId, contactId }) {
     const classDoc = await ClassModel.findById(classId);
     if (!classDoc) throw new Error("Class not found");
-    if (classDoc.students.includes(studentId)) throw new Error("Student already in class");
+
     if (classDoc.students.length >= classDoc.quantity) throw new Error("Class is full");
     classDoc.students.push(studentId);
     await classDoc.save();
@@ -254,11 +254,9 @@ class ClassService {
     const contact = await Contact.findById(contactId);
     if (!contact) throw new Error("Contact not found");
 
-    const course = await CourseModel.findById(classDoc.courseId);
-    if (!course) throw new Error("Course not found");
-    console.log("Test",course);
+
     const paymentData = {
-      student: studentId,
+      // student: studentId,
       studentName: contact.name,
       studentEmail : contact.email,
       studentPhone: contact.phone,

@@ -25,11 +25,15 @@ async function createUserAndAccount({ name, email, phone, roleId }) {
 
 // Reusable handler for payment completion logic
 async function handlePaymentCompletion({ paymentId, paymentMethod, req }) {
-  // 1. Update payment status and method
+  // 1. Get payment
   const payment = await PaymentModel.findById(paymentId);
-  console.log(payment);
   if (!payment) return { status: 404, result: { success: false, message: "Payment not found" } };
 
+  // 2. Get contact info FIRST
+  const contact = await ContactModel.findById(payment.contactStudent);
+  if (!contact) return { status: 404, result: { success: false, message: "Contact not found" } };
+
+  // 3. Now update payment status and history
   payment.status = "completed";
   payment.paymentMethod = paymentMethod;
   payment.history.push({
@@ -39,12 +43,9 @@ async function handlePaymentCompletion({ paymentId, paymentMethod, req }) {
     note: `${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} payment completed`
   });
   await payment.save();
+  console.log("PAYMENT", payment)
 
-  // 2. Get contact info
-  const contact = await ContactModel.findById(payment.contactStudent);
-  if (!contact) return { status: 404, result: { success: false, message: "Contact not found" } };
-
-  // 3. Create student and parent accounts in parallel if needed
+  // 4. Create student and parent accounts in parallel if needed
   const role_student = "6800d06932b289b2fe5b0403";
   const role_parent = "6800d06932b289b2fe5b0406";
 
@@ -63,7 +64,7 @@ async function handlePaymentCompletion({ paymentId, paymentMethod, req }) {
     }) : Promise.resolve({ user: null, account: null, credentials: null })
   ]);
 
-  // 4. Associate users with StudentModel and ParentModel
+  // 5. Associate users with StudentModel and ParentModel
   let studentDoc = null;
   let parentDoc = null;
   if (studentResult.user) {
@@ -97,7 +98,7 @@ async function handlePaymentCompletion({ paymentId, paymentMethod, req }) {
     }
   }
 
-  // 5. Send account info via email if created
+  // 6. Send account info via email if created
   if (studentResult.credentials && contact.email) {
     await sendAccount(contact.name, contact.email, studentResult.credentials.username, studentResult.credentials.password);
   }
@@ -105,7 +106,7 @@ async function handlePaymentCompletion({ paymentId, paymentMethod, req }) {
     await sendAccount(contact.parentName || `Phụ huynh của ${contact.name}`, contact.parentEmail, parentResult.credentials.username, parentResult.credentials.password);
   }
 
-  // 6. Return credentials if created
+  // 7. Return credentials if created
   return {
     status: 200,
     result: {
