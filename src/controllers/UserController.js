@@ -98,11 +98,9 @@ class UserController {
     let userId = "";
     jwt.verify(token, process.env.JWT_SECRET, async (error, decoded) => {
       if (error) return next(new UnAuthorizedError("Invalid token."));
-      console.log("Decoded", decoded);
 
       userId = decoded.id;
     });
-    console.log("userId", userId);
 
     const user = await UserService.getUserProfile(userId);
     if (!user) {

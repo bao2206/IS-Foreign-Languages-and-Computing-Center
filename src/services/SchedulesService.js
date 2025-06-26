@@ -31,8 +31,9 @@ class SchedulesService {
         break;
       case "getByStudentId":
         if (!user) throw new Error("User not found");
+        // Sửa lại điều kiện truy vấn class theo students.student
         const classData = await ClassModel.findOne({
-          students: user._id,
+          "students.student": user._id,
         }).select("_id");
         if (!classData) throw new Error("Class not found for this student");
         queryObj.classId = classData._id;
@@ -50,7 +51,7 @@ class SchedulesService {
         query = query.populate(populate);
       });
     } else {
-      // Mặc định populate teacher
+      // Mặc định populate teacher và classId
       query = query.populate("teacher").populate("classId");
     }
 

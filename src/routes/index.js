@@ -17,4 +17,5 @@ router.use("/contact", require("./contactRoute"));
 router.use("/upload", require("./uploadRoute"));
 router.use("/role", require("./RoleRoute"));
 router.use("/attendance", require("./attendanceRoute"));
+router.use("/assignment", require("./assignmentRoute"));
 module.exports = router;

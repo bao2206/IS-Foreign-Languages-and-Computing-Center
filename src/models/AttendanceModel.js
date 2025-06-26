@@ -1,11 +1,6 @@
 const mongoose = require("mongoose");
 
 const attendanceSchema = new mongoose.Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true,
-  },
   teacherId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User", // Tham chiếu đến model Teacher, có thể thay đổi tùy model của bạn

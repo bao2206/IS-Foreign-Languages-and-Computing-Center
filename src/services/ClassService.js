@@ -30,7 +30,10 @@ class ClassService {
     const total = await ClassModel.countDocuments(filters);
 
     const classes = await ClassModel.find(filters)
-      .populate({ path: "students", model: "User" })
+      .populate({
+        path: "students.student", // populate trường student trong mảng students
+        model: "User",
+      })
       .populate({ path: "teachers", model: "User" })
       .populate("courseId")
       .sort({ createdAt: -1 })
@@ -48,7 +51,8 @@ class ClassService {
   // Class CRUD operations
   async getClassForStudent(id, query = {}) {
     const student = await UserService.findByAuthId(id);
-    const studentId = teacher._id;
+
+    const studentId = student._id;
     if (!studentId) {
       throw new Error("Student ID is required");
     }
@@ -60,12 +64,20 @@ class ClassService {
     if (query.name) {
       filters.classname = { $regex: query.name, $options: "i" };
     }
-    filters.students = studentId;
+    // Sử dụng $elemMatch để kiểm tra studentId trong mảng students
+    filters.students = {
+      $elemMatch: {
+        $or: [
+          { _id: studentId }, // Trường hợp students chứa _id trực tiếp
+          { student: studentId }, // Trường hợp students chứa object với student._id
+        ],
+      },
+    };
 
     const total = await ClassModel.countDocuments(filters);
 
     const classes = await ClassModel.find(filters)
-      .populate({ path: "students", model: "User" })
+      .populate({ path: "students.student", model: "User" }) // Populate chi tiết student trong students
       .populate({ path: "teachers", model: "User" })
       .populate("courseId")
       .sort({ createdAt: -1 })
@@ -243,22 +255,26 @@ class ClassService {
     );
   }
 
-  async addNewStudentToClass({ classId, contactId }) {
+  async addNewStudentToClass({ classId, studentId, contactId }) {
     const classDoc = await ClassModel.findById(classId);
     if (!classDoc) throw new Error("Class not found");
-
-    if (classDoc.students.length >= classDoc.quantity) throw new Error("Class is full");
+    if (classDoc.students.includes(studentId))
+      throw new Error("Student already in class");
+    if (classDoc.students.length >= classDoc.quantity)
+      throw new Error("Class is full");
     classDoc.students.push(studentId);
     await classDoc.save();
 
     const contact = await Contact.findById(contactId);
     if (!contact) throw new Error("Contact not found");
 
-
+    const course = await CourseModel.findById(classDoc.courseId);
+    if (!course) throw new Error("Course not found");
+    console.log("Test", course);
     const paymentData = {
-      // student: studentId,
+      student: studentId,
       studentName: contact.name,
-      studentEmail : contact.email,
+      studentEmail: contact.email,
       studentPhone: contact.phone,
       // parent: contact.parentId || null,
       parentName: contact.parentName || "",
@@ -273,12 +289,14 @@ class ClassService {
       status: "pending",
       contactStudent: contact,
       // paymentMethod is omitted for pending status
-      history: [{
-        action: "payment_initiated",
-        by: studentId,
-        date: new Date(),
-        note: "Invoice created upon class assignment"
-      }]
+      history: [
+        {
+          action: "payment_initiated",
+          by: studentId,
+          date: new Date(),
+          note: "Invoice created upon class assignment",
+        },
+      ],
     };
     await PaymentService.createPayment(paymentData);
 
@@ -318,11 +336,11 @@ class ClassService {
   async getOpenClassesByCourseId(courseId) {
     const classes = await ClassModel.find({
       courseId: courseId,
-      status: "Incomplete" // Open classes are those with "Incomplete" status
+      status: "Incomplete", // Open classes are those with "Incomplete" status
     })
-    .populate({ path: "teachers", model: "User", select: "name email" })
-    .populate("courseId", "coursename description price")
-    .sort({ createdAt: -1 });
+      .populate({ path: "teachers", model: "User", select: "name email" })
+      .populate("courseId", "coursename description price")
+      .sort({ createdAt: -1 });
 
     return classes;
   }
@@ -365,7 +383,6 @@ class ClassService {
       { new: true }
     );
   }
-
 }
 
 module.exports = new ClassService();
