@@ -41,6 +41,12 @@ const PaymentSchema = new Schema(
       type: String,
       required: true,
     },
+    studentPhone: {
+      type: String,
+    },
+    studentEmail: {
+      type: String,
+    },
     parent: {
       type: Schema.Types.ObjectId,
       ref: "Parent",
@@ -49,6 +55,12 @@ const PaymentSchema = new Schema(
     parentName: {
       type: String,
       required: false,
+    },
+    parentEmail: {
+      type: String,
+    },
+    parentPhone: {
+      type: String,
     },
     course: {
       type: Schema.Types.ObjectId,
@@ -88,11 +100,6 @@ const PaymentSchema = new Schema(
       required: function () {
         return this.status !== "pending";
       },
-    },
-    contactStudent: {
-      type: Schema.Types.ObjectId,
-      ref: "Contact",
-      required: true,
     },
     history: [PaymentHistorySchema],
   },
