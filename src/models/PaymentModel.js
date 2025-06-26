@@ -101,6 +101,11 @@ const PaymentSchema = new Schema(
         return this.status !== "pending";
       },
     },
+    vnpTxnRef: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
     history: [PaymentHistorySchema],
   },
   { timestamps: true }
