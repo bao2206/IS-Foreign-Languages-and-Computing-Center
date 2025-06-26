@@ -1,22 +1,43 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const mongoose = require("mongoose");
 
-const AttendanceSchema = new Schema({
-    studentId: {
-        type: Schema.Types.ObjectId,
-        ref: "Student",
-        required: [true, "Please provide a student"]
+const attendanceSchema = new mongoose.Schema({
+  id: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  teacherId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // Tham chiếu đến model Teacher, có thể thay đổi tùy model của bạn
+  },
+  students: [
+    {
+      studentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User", // Tham chiếu đến model Student, có thể thay đổi tùy model của bạn
+        required: true,
+      },
+      status: {
+        type: String,
+        enum: ["present", "absent", "late"], // Trạng thái điểm danh
+        default: "present",
+      },
     },
-    classId: {
-        type: Schema.Types.ObjectId,
-        ref: "Class",
-        required: [true, "Please provide a class"]
-    },
-    date: {
-        type: Date,
-        default: Date.now
-    },
-    status: { type: String, enum: ["present", "late", "absent"], default: "present" }
-})
+  ],
+  classId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Class", // Tham chiếu đến model Class, có thể thay đổi tùy model của bạn
+    required: true,
+  },
+  date: {
+    type: Date,
+    required: true,
+  },
+  timestamp: {
+    type: Date,
+    required: true,
+    default: Date.now,
+  },
+});
 
-module.exports = mongoose.model("Attendance", AttendanceSchema);
+module.exports = mongoose.model("Attendance", attendanceSchema);
