@@ -36,7 +36,7 @@ function generatePassword(length = 8) {
 async function createAccount(email) {
   // Generate username and password
   const username = generateUsername(email);
-  const password = generatePassword(8);
+  const password = "12345678Abc"
   return {
     username, password
   }

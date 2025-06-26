@@ -6,6 +6,7 @@ const UserService = require("./userService");
 const Contact = require("../models/ContactModel");
 const CourseModel = require("../models/CourseModel");
 const PaymentService = require("../services/PaymentService");
+const StudentModel = require("../models/StudentModel");
 
 const mongoose = require("mongoose");
 
@@ -243,49 +244,109 @@ class ClassService {
     );
   }
 
-  async addNewStudentToClass({ classId, contactId }) {
+  async addNewStudentToClass(classId, contactId) {
+    // 1. Retrieve class and contact
+    
     const classDoc = await ClassModel.findById(classId);
     if (!classDoc) throw new Error("Class not found");
-
     if (classDoc.students.length >= classDoc.quantity) throw new Error("Class is full");
-    classDoc.students.push(studentId);
-    await classDoc.save();
 
     const contact = await Contact.findById(contactId);
     if (!contact) throw new Error("Contact not found");
 
+    // 2. Get student name (or parent's name if not available)
+    const studentName = contact.name || contact.parentName || "Unnamed Student";
+    const studentEmail = contact.email || undefined;
+    const studentPhone = contact.phone || undefined;
 
+    // 3. Create UserModel for student
+    const user = await UserService.createNewStaff({
+      name: studentName,
+      email: studentEmail,
+      phone: studentPhone,
+    });
+    // console.log("user", user)
+    // 4. Create StudentModel and link to user and class
+    let student = await StudentModel.create({
+      userId: user._id,
+      classId: [classId],
+    });
+    // console.log("student", student)
+    // 5. If parent info exists, create parent user and ParentModel, link student
+    let parent = null;
+    if (contact.parentName || contact.parentEmail || contact.parentPhone) {
+      // Create User for parent
+      const parentUser = await UserService.createNewStaff({
+        name: contact.parentName || `Parent of ${studentName}`,
+        email: contact.parentEmail || undefined,
+        phone: contact.parentPhone || undefined,
+      });
+      // Create or update ParentModel
+      const ParentModel = require("../models/ParentModel");
+      parent = await ParentModel.findOne({ userId: parentUser._id });
+      if (!parent) {
+        parent = await ParentModel.create({
+          userId: parentUser._id,
+          phone: contact.parentPhone || undefined,
+          students: [student._id],
+        });
+      } else {
+        // Add student to parent's students array if not already present
+        if (!parent.students.includes(student._id)) {
+          parent.students.push(student._id);
+          await parent.save();
+        }
+      }
+      // Set student's parentId
+      // student.parentId = parent._id;
+      // await student.save();
+    }
+
+    // 6. Update class to include this student with status 'pending tuition payment'
+    classDoc.students.push({ student: user._id, status: "pending tuition payment" });
+    await classDoc.save();
+
+    // 7. Create invoice (payment)
+    let course = null;
+    if (classDoc.courseId) {
+      course = await CourseModel.findById(classDoc.courseId);
+    }
+    // console.log("course", course)
+    console.log("1")
     const paymentData = {
-      // student: studentId,
-      studentName: contact.name,
-      studentEmail : contact.email,
-      studentPhone: contact.phone,
-      // parent: contact.parentId || null,
+      student: user._id,
+      studentName: studentName,
+      studentEmail: studentEmail,
+      studentPhone: studentPhone,
+      parent: parent ? parent._id : null,
       parentName: contact.parentName || "",
       parentEmail: contact.parentEmail || "",
       parentPhone: contact.parentPhone || "",
-      course: course._id,
-      courseName: course.coursename,
-      coursePrice: course.price,
+      course: course ? course._id : undefined,
+      courseName: course ? course.coursename : undefined,
+      coursePrice: course ? course.price : undefined,
       class: classDoc._id,
       className: classDoc.classname,
       paymentDate: new Date(),
       status: "pending",
-      contactStudent: contact,
-      // paymentMethod is omitted for pending status
       history: [{
         action: "payment_initiated",
-        by: studentId,
+        by: user._id,
         date: new Date(),
         note: "Invoice created upon class assignment"
       }]
     };
+    
+    // console.log("payment" , paymentData)
+    // console.log("2")
     await PaymentService.createPayment(paymentData);
 
+    // 8. Update contact status
     contact.status = "class_assigned";
     await contact.save();
 
-    return classDoc;
+    return { class: classDoc, student, user, parent };
+    // return paymentData;
   }
 
   async removeStudentFromClass(classId, studentId) {

@@ -5,11 +5,14 @@ const { addNewStudentToClass, addStudentToClass } = require("../services/ClassSe
 const PaymentModel = require("../models/PaymentModel")
 const ContactModel = require("../models/ContactModel")
 const {createAccount} = require("../utils/userUtils")
-const StudentModel = require("../models/StudentModel");
-const ParentModel = require("../models/ParentModel");
+// const StudentModel = require("../models/StudentModel");
+// const ParentModel = require("../models/ParentModel");
+const { generateUsername } = require("../utils/userUtils");
+const ClassModel = require("../models/ClassModel")
+const UserModel = require("../models/UserModel")
 const { sendAccount } = require("../services/emailService");
-// const UserModel = require("../models/UserModel")
-
+const qs = require('qs');
+const crypto = require('crypto');
 const SYSTEM_USER_ID = "000000000000000000000000"; // Replace with a real ObjectId if you have a system user
 
 // Helper to create user and account if email is present
@@ -25,15 +28,12 @@ async function createUserAndAccount({ name, email, phone, roleId }) {
 
 // Reusable handler for payment completion logic
 async function handlePaymentCompletion({ paymentId, paymentMethod, req }) {
-  // 1. Get payment
+
   const payment = await PaymentModel.findById(paymentId);
   if (!payment) return { status: 404, result: { success: false, message: "Payment not found" } };
 
-  // 2. Get contact info FIRST
-  const contact = await ContactModel.findById(payment.contactStudent);
-  if (!contact) return { status: 404, result: { success: false, message: "Contact not found" } };
 
-  // 3. Now update payment status and history
+
   payment.status = "completed";
   payment.paymentMethod = paymentMethod;
   payment.history.push({
@@ -45,79 +45,66 @@ async function handlePaymentCompletion({ paymentId, paymentMethod, req }) {
   await payment.save();
   console.log("PAYMENT", payment)
 
-  // 4. Create student and parent accounts in parallel if needed
+  // 4. Update student's status in the class to 'paid'
+  const classDoc = await ClassModel.findById(payment.class);
+  console.log(classDoc)
+  if (classDoc) {
+
+    const studentEntry = classDoc.students.find(
+      s => (s.student && s.student.toString()) === payment.student.toString()
+    );
+    if (studentEntry) {
+      studentEntry.status = "paid";
+      await classDoc.save();
+    }
+  }
+  // console.log("StudentEntry", studentEntry)
   const role_student = "6800d06932b289b2fe5b0403";
   const role_parent = "6800d06932b289b2fe5b0406";
+  const password = "12345678Abc"
+  let studentAuth = null, parentAuth = null;
 
-  const [studentResult, parentResult] = await Promise.all([
-    createUserAndAccount({
-      name: contact.name,
-      email: contact.email,
-      phone: contact.phone,
-      roleId: role_student
-    }),
-    contact.parentEmail ? createUserAndAccount({
-      name: contact.parentName || `Parent of ${contact.name}`,
-      email: contact.parentEmail,
-      phone: contact.parentPhone,
-      roleId: role_parent
-    }) : Promise.resolve({ user: null, account: null, credentials: null })
-  ]);
-
-  // 5. Associate users with StudentModel and ParentModel
-  let studentDoc = null;
-  let parentDoc = null;
-  if (studentResult.user) {
-    // Find or create StudentModel entry
-    studentDoc = await StudentModel.findOne({ userId: studentResult.user._id });
-    if (!studentDoc) {
-      studentDoc = await StudentModel.create({ userId: studentResult.user._id });
-    } else {
-      studentDoc.userId = studentResult.user._id;
-      await studentDoc.save();
-    }
-  }
-  if (parentResult.user) {
-    // Find or create ParentModel entry
-    parentDoc = await ParentModel.findOne({ userId: parentResult.user._id });
-    if (!parentDoc) {
-      parentDoc = await ParentModel.create({ userId: parentResult.user._id, phone: contact.parentPhone });
-    } else {
-      parentDoc.userId = parentResult.user._id;
-      await parentDoc.save();
-    }
-    // Add student to parent's students array if not already present
-    if (studentDoc && !parentDoc.students.includes(studentDoc._id)) {
-      parentDoc.students.push(studentDoc._id);
-      await parentDoc.save();
-    }
-    // Also, update studentDoc's parentId if not set
-    if (studentDoc && !studentDoc.parentId) {
-      studentDoc.parentId = parentDoc._id;
-      await studentDoc.save();
+  // Create student Auth account
+  if (payment.studentEmail) {
+    studentAuth = await AuthService.createAccount(generateUsername(payment.studentEmail), password, role_student);
+    console.log("Student auth", studentAuth);
+    // Assign authId to student user
+    const studentUser = await UserModel.findOne({ email: payment.studentEmail });
+    if (studentUser) {
+      studentUser.authId = studentAuth._id;
+      await studentUser.save();
+      // Send email
+      await sendAccount(studentUser.name, studentUser.email, studentAuth.username, password);
     }
   }
 
-  // 6. Send account info via email if created
-  if (studentResult.credentials && contact.email) {
-    await sendAccount(contact.name, contact.email, studentResult.credentials.username, studentResult.credentials.password);
-  }
-  if (parentResult.credentials && contact.parentEmail) {
-    await sendAccount(contact.parentName || `Phụ huynh của ${contact.name}`, contact.parentEmail, parentResult.credentials.username, parentResult.credentials.password);
+  // Create parent Auth account
+  if (payment.parentEmail) {
+    parentAuth = await AuthService.createAccount(generateUsername(payment.parentEmail), password, role_parent);
+    // console.log("Parent auth", parentAuth)
+    // Assign authId to parent user
+    const parentUser = await UserModel.findOne({ email: payment.parentEmail });
+    if (parentUser) {
+      parentUser.authId = parentAuth._id;
+      await parentUser.save();
+      // Send email
+      await sendAccount(parentUser.name, parentUser.email, parentAuth.username, password);
+    }
   }
 
-  // 7. Return credentials if created
+  // 8. Return credentials if created
   return {
     status: 200,
     result: {
       success: true,
       message: `Payment completed and accounts created via ${paymentMethod}.`,
-      studentAccount: studentResult.credentials || null,
-      parentAccount: parentResult.credentials || null,
-      studentId: studentDoc ? studentDoc._id : null,
-      parentId: parentDoc ? parentDoc._id : null
+      studentAccount: studentAuth || null,
+      parentAccount: parentAuth || null,
+      studentId: studentAuth ? studentAuth._id : null,
+      parentId: parentAuth ? parentAuth._id : null
     }
   };
+
 }
 
 class PaymentController {
@@ -238,7 +225,65 @@ class PaymentController {
       const { status, result } = await handlePaymentCompletion({ paymentId, paymentMethod: "cash", req });
       res.status(status).json(result);
     } catch (error) {
+      console.error("Error in completeCashPayment:", error);
       res.status(500).json({ success: false, message: error.message });
+    }
+  }
+  async createVnpayPayment(req, res) {
+    try {
+      const { amount, paymentId, orderInfo, bankCode } = req.body;
+      const tmnCode = process.env.VNPAY_TMNCODE;
+      const secretKey = process.env.VNPAY_HASH_SECRET;
+      const vnpUrl = process.env.VNPAY_URL;
+      const returnUrl = process.env.VNPAY_RETURN_URL;
+
+      const date = new Date();
+      const createDate = date.toISOString().replace(/[-:TZ.]/g, '').slice(0, 14);
+      const payment = PaymentModel.findById(paymentId);
+      if(!payment) throw new error("Cannot find");
+      let vnp_Params = {
+        'vnp_Version': '2.1.0',
+        'vnp_Command': 'pay',
+        'vnp_TmnCode': tmnCode,
+        'vnp_Locale': 'vn',
+        'vnp_CurrCode': 'VND',
+        'vnp_TxnRef': paymentId,
+        'vnp_OrderInfo': `${payment.studentName} ${payment.courseName} ${payment.className}`,
+        'vnp_OrderType': 'other',
+        'vnp_Amount': payment.coursePrice, // VNPAY expects amount in VND * 100
+        'vnp_ReturnUrl': returnUrl,
+        'vnp_IpAddr': req.ip,
+        'vnp_CreateDate': createDate,
+      };
+      if (bankCode) vnp_Params['vnp_BankCode'] = bankCode;
+
+      // Sort params
+      vnp_Params = Object.fromEntries(Object.entries(vnp_Params).sort());
+
+      // Create sign data
+      const signData = qs.stringify(vnp_Params, { encode: false });
+      const hmac = crypto.createHmac('sha512', secretKey);
+      const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
+      vnp_Params['vnp_SecureHash'] = signed;
+
+      // Build payment URL
+      const paymentUrl = `${vnpUrl}?${qs.stringify(vnp_Params, { encode: false })}`;
+      res.json({ paymentUrl });
+    } catch (error) {
+      console.error('VNPAY payment error:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+  async vnpayReturn(req, res) {
+    const vnp_Params = req.query;
+    // You can verify the signature here if you want
+    // Check vnp_Params['vnp_ResponseCode'] === '00' for success
+    if (vnp_Params['vnp_ResponseCode'] === '00') {
+      // Payment successful
+      // Update your payment/order status here
+      res.json({ success: true, message: 'Payment successful', vnp_Params });
+    } else {
+      res.json({ success: false, message: 'Payment failed', vnp_Params });
     }
   }
 }

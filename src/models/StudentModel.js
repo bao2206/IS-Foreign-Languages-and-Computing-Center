@@ -22,9 +22,3 @@ const StudentSchema = new Schema({
 
 module.exports = mongoose.model("Student", StudentSchema);
 
-const UserService = require("../services/userService");
-const AuthService = require("../services/AuthService");
-const RoleService = require("../services/RoleService");
-const StudentModel = require("../models/StudentModel");
-const ClassModel = require("../models/ClassModel");
-const { generateUsername, generatePassword } = require("../utils/userUtils");

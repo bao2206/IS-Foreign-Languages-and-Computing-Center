@@ -109,7 +109,8 @@ class ClassController {
   async addNewStudentToClass(req, res) {
     try {
       const { classId, contactId } = req.body;
-      const updatedClass = await ClassService.addNewStudentToClass({ classId, studentId, contactId });
+      const updatedClass = await ClassService.addNewStudentToClass(classId, contactId );
+      console.log(updatedClass)
       res.status(200).json({ success: true, data: updatedClass });
     } catch (error) {
       res.status(400).json({ success: false, message: error.message });

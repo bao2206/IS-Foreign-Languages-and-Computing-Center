@@ -121,6 +121,20 @@ class CourseController {
       res.status(500).json({ message: "Failed to fetch open classes" });
     }
   }
+
+  async getCourseById(req, res) {
+    try {
+      const { id } = req.params;
+      const course = await CourseService.getByCourseId(id);
+      if (!course) {
+        return res.status(404).json({ message: `Course with id ${id} not found` });
+      }
+      return res.status(200).json({ data: course });
+    } catch (error) {
+      console.error(`Failed to fetch course by id:`, error);
+      return res.status(500).json({ message: "Failed to fetch course", error: error.message });
+    }
+  }
 }
 
 module.exports = new CourseController();
