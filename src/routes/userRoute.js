@@ -22,6 +22,12 @@ router.get(
   asyncHandle(userController.getUserProfile)
 );
 
+router.put(
+  "/profile",
+  authMiddleware,
+  asyncHandle(userController.updateUserProfile)
+);
+
 // router.get('/', userController.getAllUsers);
 // tạo nhân viên mới
 router.post(

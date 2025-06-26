@@ -21,6 +21,8 @@ const {
 } = require("../core/errorCustom");
 const { validateFields } = require("../utils/validators");
 
+const decodeToken = require("../utils/decodeToken");
+
 class UserController {
   async getAllUsers(req, res) {
     const { role, page = 1, limit = 10, search, status, sex } = req.query;
@@ -109,6 +111,22 @@ class UserController {
     return res.status(200).json({
       message: "User profile retrieved successfully",
       data: user,
+    });
+  }
+
+  async updateUserProfile(req, res) {
+    const user = req.body;
+
+    let token = req.header("Authorization")?.replace("Bearer ", "");
+    if (!token) token = req.query.token || req.params.token;
+    const decode = await decodeToken(token);
+    const updatedUser = await UserService.updateUserProfile(decode.id, user);
+    if (!updatedUser) {
+      throw new NotFoundError("User not found");
+    }
+    return res.status(200).json({
+      message: "User profile updated successfully",
+      data: updatedUser,
     });
   }
 

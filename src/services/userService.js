@@ -214,6 +214,27 @@ class UserService {
       },
     });
   }
+
+  async updateUserProfile(authId, data) {
+    const user = await userModel.findOne({ authId: authId });
+    if (!user) throw new NotFoundError("User not found");
+
+    const { email, phone, address } = data;
+
+    Object.assign(user, {
+      ...(email !== undefined && { email }),
+      ...(phone !== undefined && { phone }),
+    });
+
+    if (address !== undefined) {
+      user.address = {
+        ...user.address,
+        ...address,
+      };
+    }
+
+    return await user.save();
+  }
 }
 
 module.exports = new UserService();
