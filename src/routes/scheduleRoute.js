@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { asyncHandle } = require("../utils/asyncHandle");
-
+const authMiddleware = require("../middlewares/authMiddleware");
 const scheduleController = require("../controllers/ScheduleController");
 
 router.get("/", (req, res) => {
@@ -10,9 +10,25 @@ router.get("/", (req, res) => {
 
 // Define routes for schedule operations
 // Get methods
-router.post("/get", asyncHandle(scheduleController.getSchedules));
-router.put("/update", asyncHandle(scheduleController.updateSchedule));
-router.post("/create", asyncHandle(scheduleController.createSchedule));
-router.delete("/delete", asyncHandle(scheduleController.deleteSchedule));
+router.post(
+  "/get",
+  authMiddleware,
+  asyncHandle(scheduleController.getSchedules)
+);
+router.put(
+  "/update",
+  authMiddleware,
+  asyncHandle(scheduleController.updateSchedule)
+);
+router.post(
+  "/create",
+  authMiddleware,
+  asyncHandle(scheduleController.createSchedule)
+);
+router.delete(
+  "/delete",
+  authMiddleware,
+  asyncHandle(scheduleController.deleteSchedule)
+);
 
 module.exports = router;
