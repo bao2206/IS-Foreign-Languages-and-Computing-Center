@@ -1,4 +1,4 @@
-const TeacherService = require('../services/teacherService');
+const TeacherService = require('../services/TeacherService');
 
 class TeacherController {
     async getAllTeachers(req, res) {
