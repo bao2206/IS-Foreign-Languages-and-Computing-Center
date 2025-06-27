@@ -52,6 +52,7 @@ class AssignmentService {
           : [classData.data._id];
         queryObj.classId = { $in: classIds };
         filterStudentId = user._id.toString();
+        queryObj.status = "published";
         break;
       case "getByClassId":
         queryObj.classId = config.classId;
