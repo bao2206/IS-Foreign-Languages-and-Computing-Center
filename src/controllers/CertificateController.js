@@ -1,4 +1,4 @@
-const TeacherService = require("../services/teacherService");
+const TeacherService = require("../services/TeacherService");
 const UserService = require("../services/userService");
 const { ErrorCustom } = require("../core/errorCustom");
 
