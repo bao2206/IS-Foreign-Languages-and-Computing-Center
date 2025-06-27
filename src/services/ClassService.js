@@ -154,9 +154,6 @@ class ClassService {
     // Áp dụng populate
     config.populates.forEach((populate) => {
       switch (populate) {
-        case "students":
-          query = query.populate({ path: "students", model: "User" });
-          break;
         case "teachers":
           query = query.populate({ path: "teachers", model: "User" });
           break;
@@ -170,6 +167,11 @@ class ClassService {
             .populate("courseId");
           break;
       }
+    });
+
+    query = query.populate({
+      path: "students.student", // populate trường student trong mảng students
+      model: "User",
     });
 
     // Áp dụng phân trang cho action "getAll"
@@ -328,7 +330,6 @@ class ClassService {
       course = await CourseModel.findById(classDoc.courseId);
     }
     // console.log("course", course)
-    console.log("1");
     const paymentData = {
       student: user._id,
       studentName: studentName,

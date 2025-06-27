@@ -12,10 +12,16 @@ const ClassSchema = new Schema({
   },
   courseId: { type: Schema.Types.ObjectId, ref: "Course" },
   teachers: [{ type: Schema.Types.ObjectId, ref: "User" }],
-  students: [{
-    student: { type: Schema.Types.ObjectId, ref: "User" },
-    status: { type: String, enum: ["pending tuition payment", "enrolled", "paid"], default: "pending tuition payment" }
-  }],
+  students: [
+    {
+      student: { type: Schema.Types.ObjectId, ref: "User" },
+      status: {
+        type: String,
+        enum: ["pending tuition payment", "enrolled", "paid"],
+        default: "pending tuition payment",
+      },
+    },
+  ],
   quantity: {
     type: Number,
     required: [true, "Please provide a quantity"],
@@ -25,12 +31,6 @@ const ClassSchema = new Schema({
   daybegin: {
     type: Date,
     required: [false, "Please provide a day begin"],
-    validate: {
-      validator: function (v) {
-        return v >= new Date();
-      },
-      message: "Start date must be today or in the future",
-    },
   },
   dayend: {
     type: Date,
