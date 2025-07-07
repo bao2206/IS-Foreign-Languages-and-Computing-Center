@@ -61,7 +61,7 @@ const sendAccount = async (name, email, username, password) => {
  * 🔑 Gửi email đặt lại mật khẩu
  */
 const sendResetPasswordEmail = async (email, token) => {
-  const resetUrl = `http://localhost:3000/reset-password?token=${token}`;
+  const resetUrl = `https://is-foreign-languages-and-computing.vercel.app/reset-password?token=${token}`;
   const html = `
     <p>Bạn vừa yêu cầu đặt lại mật khẩu.</p>
     <p>Nhấn vào liên kết sau để đặt lại mật khẩu của bạn:</p>
