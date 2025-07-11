@@ -380,7 +380,7 @@ class PaymentController {
   
     // Tạo mã giao dịch duy nhất
     const vnp_TxnRef = uuidv4();
-  
+    console.log("vnp_TxnRef",vnp_TxnRef)
     // Lưu lại để xử lý callback
     payment.vnpTxnRef = vnp_TxnRef;
     await payment.save();
@@ -395,7 +395,7 @@ class PaymentController {
       vnp_Locale: VnpLocale.VN,
       vnp_OrderInfo: vnp_OrderInfo,
       vnp_OrderType: ProductCode.Other,
-      vnp_Amount: Math.round(Number(payment.coursePrice) * 100), // nhân 100 theo yêu cầu
+      vnp_Amount: Math.round(Number(payment.coursePrice)), // nhân 100 theo yêu cầu
       vnp_ReturnUrl: returnUrl,
       vnp_IpAddr:
         req.headers["x-forwarded-for"] ||
@@ -412,7 +412,7 @@ class PaymentController {
   async vnpayReturn(req, res) {
     try {
       const vnp_Params = req.query;
-      console.log("415",req.query)
+      // console.log("415",req.query)
       if (vnp_Params["vnp_ResponseCode"] === "00") {
         const vnp_TxnRef = vnp_Params["vnp_TxnRef"];
   
@@ -424,7 +424,7 @@ class PaymentController {
   
         const { status, result } = await handlePaymentCompletion({
           paymentId: payment._id.toString(), // truyền lại _id thật
-          paymentMethod: "vnpay",
+          paymentMethod: "VNPAY",
           req,
         });
   
