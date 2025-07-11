@@ -32,7 +32,9 @@ class ContactController {
   // Create a new consultation request (public form)
   async createPublicConsultation(req, res) {
     // console.log(req.body)
-    const { name, phone, email, consultationContent } = req.body;
+    const { name, phone, email, consultationContent, assignedCourse,  parentName,
+      parentPhone,
+      parentEmail, } = req.body;
     const validation = validateFields({ phone, email });
     if (!validation.isValid) {
       throw new BadRequestError(validation.errors);
@@ -54,6 +56,10 @@ class ContactController {
       email,
       consultationContent,
       status: "pending",
+      assignedCourse: assignedCourse ,
+      parentName,
+      parentPhone,
+      parentEmail,
     });
     await sendMailThankYouContact(email, name);
     res.status(201).json({

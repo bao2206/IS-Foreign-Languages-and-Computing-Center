@@ -135,6 +135,24 @@ class CourseController {
       return res.status(500).json({ message: "Failed to fetch course", error: error.message });
     }
   }
+
+  async getSpecialCourses(req, res) {
+    try {
+      const specialCourses = await CourseService.getCourses({ action: "getSpecial" });
+      return res.status(200).json({
+        success: true,
+        data: specialCourses,
+        count: specialCourses.length
+      });
+    } catch (error) {
+      console.error("Error fetching special courses:", error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Failed to fetch special courses", 
+        error: error.message 
+      });
+    }
+  }
 }
 
 module.exports = new CourseController();

@@ -8,6 +8,7 @@ router.get("/", (req, res) => {
   res.send("Course route is working!");
 });
 
+router.get("/special", asyncHandle(courseController.getSpecialCourses));
 router.get("/:id", asyncHandle(courseController.getCourseById));
 router.post("/get", asyncHandle(courseController.getCourse));
 router.post(
